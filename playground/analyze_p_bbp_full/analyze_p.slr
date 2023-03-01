@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#SBATCH -q regular
+#SBATCH -N 1
+#SBATCH -t 03:30:00
+#SBATCH -C haswell
+#SBATCH -L SCRATCH
+#SBATCH --mail-user=zladd@berkeley.edu
+#SBATCH --mail-type=ALL
+
+
+
+
+input="input.txt"
+while IFS= read -r line
+do
+    IFS='=' read -ra inputs <<< "$line"
+    name="${inputs[0]}"
+    data="${inputs[1]}"
+done < "$input"
+true=True
+source ./input.txt
+
+echo running analyze p parallel
+export OMP_NUM_THREADS=1
+srcDir=`pwd`
+
+wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}
+mkdir ${wrkDir}/'genetic_alg'
+wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}/
+echo 'my wrkDir='${wrkDir}
+
+dirToRun="genetic_alg"
+mkdir ${wrkDir}/${dirToRun}
+mkdir ${wrkDir}/${dirToRun}/objectives
+mkdir ${wrkDir}/${dirToRun}/optimization_results
+#cp -rp ${dirToRun} ${wrkDir}
+#sleep 200
+
+
+
+if [ ${allenOpt} == ${true} ]
+  then
+    python analyze_p_bbp_full/stim_selector.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}  
+elif [ ${makeOpt} == ${true} ]
+  then
+    srun --mpi=pmi2 -n 64 python analyze_p_bbp_full/analyze_p_parallel.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}
+  fi
+  
+
+
+
