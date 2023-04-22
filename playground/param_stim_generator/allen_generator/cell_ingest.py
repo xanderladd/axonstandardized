@@ -40,7 +40,7 @@ os.makedirs('../../../../axonstandardized_data/nwb_files', exist_ok=True)
 cell_data = NwbDataSet(f"../../../../axonstandardized_data/nwb_files/{cell_id}.nwb")
 
 sweeps = cell_data.get_sweep_numbers()
-sweep = 58 #np.random.choice(sweeps)
+sweep = np.random.choice(sweeps)
 voltage_trace = cell_data.get_sweep(sweep)
 
 start, end = voltage_trace['index_range'][0], 150000 + 290800 #voltage_trace['index_range'][1]
