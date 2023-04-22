@@ -14,7 +14,7 @@ args = parser.parse_args()
 
 cell_id = args.cell_id 
 
-file_name = f'./nwb_files/{cell_id}.nwb'
+file_name = f'../../../../axonstandardized_data/nwb_files/{cell_id}.nwb'
 data_set = NwbDataSet(file_name)
 
 sweep_numbers = sorted(data_set.get_experiment_sweep_numbers())
