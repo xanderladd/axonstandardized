@@ -126,8 +126,10 @@ full_noise_ind = [initial_ind, 4400000]
 sq_0_5_ind = [initial_ind, 450000]
 sq_2_ind = [130000, 700000]
 
-stim_file_path = f'./stims/allen_data_stims_{cell_id}.hdf5'
-volts_file_path = f'./target_volts/allen_data_target_volts_{cell_id}.hdf5'
+os.makedirs('../../../../axonstandardized_data/stims', exist_ok=True)
+os.makedirs('../../../../axonstandardized_data/target_volts', exist_ok=True)
+stim_file_path = f'../../../../axonstandardized_data/stims/allen_data_stims_{cell_id}.hdf5'
+volts_file_path = f'../../../../axonstandardized_data/target_volts/allen_data_target_volts_{cell_id}.hdf5'
 
 def sample(orig_list, final_len, is_stim, sampling_rate):
     rate = int(len(orig_list)/final_len)
