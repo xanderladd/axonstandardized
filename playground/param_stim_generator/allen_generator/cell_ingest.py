@@ -33,7 +33,7 @@ cell_id = args.cell_id
 
 # NOTE: saves data to file
 os.makedirs('../../../../axonstandardized_data/nwb_files', exist_ok=True)
-cell_api.save_ephys_data(cell_id, f"../../../../axonstandardized_data/nwb_filesnwb_files/{cell_id}.nwb")
+cell_api.save_ephys_data(cell_id, f"../../../../axonstandardized_data/nwb_files/{cell_id}.nwb")
 
 # read NWB file that we just downloaded
 os.makedirs('../../../../axonstandardized_data/nwb_files', exist_ok=True)
