@@ -1,0 +1,75 @@
+strdef fitFile,timesFile,paramsFile,stimFile,outFile,modelFile
+modelFile = "./mosinit.hoc"
+load_file(modelFile)
+objref st,stims,fin,fout,pmat,vecOut,stimtime,curr_stim
+ntimestep = 0
+v_init = -72
+//create soma
+proc runStim(){
+	//access soma
+	finitialize(v_init)
+	st = new IClamp(0.5)
+	st.del=0
+	st.dur=1e9
+	vecOut = new Vector(ntimestep)
+	tfunc()
+	counter = 0
+	for(timeSteps=0; timeSteps<stimtime.ncol; timeSteps+=1){
+		dt = stimtime.x(0,timeSteps)
+		st.amp = curr_stim.x(timeSteps)
+		vecOut.x(counter)=v(0.5)
+		counter+=1
+		fadvance()
+        /*
+        if (i_cap > 0.000012) {
+            printf("** ina : %f ik : %f ica: %f  icap %f **", ina, ik, ica, i_cap )
+        }
+        */
+	}
+	printf("finshed run matrix\n")
+    
+    /*
+    forsec cell.axonal{
+        printf("\n Axonal params: \n %f",gNaTa_tbar_NaTa_t)
+        printf("%f",gK_Tstbar_K_Tst)
+        printf("%f",gNaTa_tbar_NaTa_t)
+        printf("%f",gNap_Et2bar_Nap_Et2)
+        printf("%f",gK_Pstbar_K_Pst)
+        printf("%f",gSKv3_1bar_SKv3_1)
+        printf("%f",gCa_LVAstbar_Ca_LVAst)
+        printf("%f",gCa_HVAbar_Ca_HVA)
+  
+    }
+        
+    forsec cell.somatic{
+        printf("\n Somatic params: \n")
+        printf("%f",gNaTs2_tbar_NaTs2_t)
+        printf("%f",gSKv3_1bar_SKv3_1)
+        printf("%f",gCa_LVAstbar_Ca_LVAst)
+        printf("%f",gCa_HVAbar_Ca_HVA)
+  
+    } 
+    
+    
+    forsec cell.apical{
+        printf("\n APICAL params: \n")
+        printf("%f",gNaTs2_tbar_NaTs2_t)
+        printf("%f",gSKv3_1bar_SKv3_1)
+        printf("%f",gIhbar_Ih)
+        printf("%f",gImbar_Im)
+          
+    }
+    
+    forsec cell.basal{
+        printf("\n BASAL params: \n")
+        //printf("%f",Ih)
+        printf("%f",gIhbar_Ih)
+          
+    }
+    
+    */
+    
+        
+        
+        
+}

@@ -1,0 +1,56 @@
+objref transvec, stim, stimtime
+transvec = new Vector()
+proc tfunc(){
+    forsec cell.all {
+        g_pas = transvec.x(0)
+        e_pas = transvec.x(1)
+        }
+    forsec cell.axonal{
+        gNaTa_tbar_NaTa_t = transvec.x(2)
+        gK_Tstbar_K_Tst = transvec.x(3)
+        gK_Pstbar_K_Pst = transvec.x(4)
+        gSKv3_1bar_SKv3_1 = transvec.x(5)
+        gCa_LVAstbar_Ca_LVAst = transvec.x(6)
+    }
+    forsec cell.somatic{
+        gSKv3_1bar_SKv3_1 = transvec.x(7)
+        gNaTs2_tbar_NaTs2_t = transvec.x(8)
+        gCa_LVAstbar_Ca_LVAst = transvec.x(9)
+        
+    }
+    forsec cell.somatic{
+        gSKv3_1bar_SKv3_1 = transvec.x(7)
+        gNaTs2_tbar_NaTs2_t = transvec.x(8)
+        gCa_LVAstbar_Ca_LVAst = transvec.x(9)
+        
+    }
+    forsec cell.basal{
+        gIhbar_Ih = transvec.x(10)
+    }
+    
+    forsec cell.apical{
+        gIhbar_Ih = transvec.x(10)
+    }
+    forsec cell.all {
+        cm = transvec.x(11)
+    }
+    forsec cell.basal{
+        cm = transvec.x(12)
+    }
+    
+    forsec cell.apical{
+        cm = transvec.x(12)
+    }
+    
+    /*
+    forsec cell.apical{
+        gSKv3_1bar_SKv3_1 = 0
+        gNaTs2_tbar_NaTs2_t = 0
+        gImbar_Im = 0
+        
+        printf("WARNING: apical params being set to zero -- change back later")
+    }
+    */
+    
+        
+}

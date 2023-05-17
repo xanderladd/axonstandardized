@@ -1,0 +1,13 @@
+module purge
+module load cgpu 
+module load gcc cuda/10.2.89 openmpi/4.0.3
+module load pmi
+module load intel
+module load mvapich2/2.3.3
+module load pgi/19.10
+module load hdf5-parallel
+module unload pgi
+module load pgi/19.10
+
+
+

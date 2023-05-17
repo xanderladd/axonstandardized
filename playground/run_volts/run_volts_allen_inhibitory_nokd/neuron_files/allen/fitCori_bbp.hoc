@@ -1,0 +1,186 @@
+objref transvec, stim, stimtime
+transvec = new Vector()
+proc tfunc(){
+    
+    //printf("\n\n\n")
+    
+    // DELETED : 3, 
+    forsec cell.axonal{
+       
+        NaTa_tbar_NaTa_t =  transvec.x(0)
+        //printf("\n axon nats %f",transvec.x(0))
+        
+        gK_Tstbar_K_Tst =   transvec.x(1)
+        //printf("\n axon gK_Tstbar_K_Tst %f", transvec.x(1))
+
+        gamma_CaDynamics_E2 =   transvec.x(2)
+        //printf("\n axon gamma_CaDynamics_E2 %f", transvec.x(2))
+
+        gCa_LVAstbar_Ca_LVAst =   transvec.x(3)
+        //printf("\n axon gCa_LVAstbar_Ca_LVAst %f", transvec.x(3))
+
+        gSK_E2bar_SK_E2 =   transvec.x(4)
+        //printf("\n axon gSK_E2bar_SK_E2 %f", transvec.x(4))
+
+        gK_Pstbar_K_Pst =   transvec.x(5)
+        //printf("\n axon gK_Pstbar_K_Pst %f", transvec.x(5))
+        
+        gSKv3_1bar_SKv3_1 =   transvec.x(6)
+        //printf("\n axon gSKv3_1bar_SKv3_1 %f", transvec.x(6))
+
+        decay_CaDynamics_E2 = transvec.x(7)
+        //printf("\n axon decay_CaDynamics_E2 %f", transvec.x(7))
+        
+        e_pas =  transvec.x(8)
+        //printf("\n axon e_pas %f", transvec.x(8))
+
+
+        g_pas =  transvec.x(9)
+        //printf("\n axon g_pas %f", transvec.x(9))
+
+        
+        gImbar_Im =  transvec.x(10)
+        //printf("\n axon gImbar_Im %f", transvec.x(10))
+
+        gCabar_Ca =  transvec.x(11)
+        //printf("\n axon gCabar_Ca %f", transvec.x(11))
+
+    }
+    
+    
+    forsec cell.somatic{
+
+        gK_Tstbar_K_Tst =  transvec.x(12)
+        //printf("\n somatic gK_Tstbar_K_Tst %f", transvec.x(12))
+
+        gamma_CaDynamics_E2 =  transvec.x(13)
+        //printf("\n somatic gamma_CaDynamics_E2 %f", transvec.x(13))
+
+        gNap_Et2bar_Nap_Et2 =  transvec.x(14)
+        //printf("\n somatic gNap_Et2bar_Nap_Et2 %f", transvec.x(14))
+        
+        gCa_LVAstbar_Ca_LVAst =  transvec.x(15)
+        //printf("\n somatic gCa_LVAstbar_Ca_LVAst %f", transvec.x(15))
+        
+        gSK_E2bar_SK_E2 =  transvec.x(16)
+        //printf("\n somatic gSK_E2bar_SK_E2 %f", transvec.x(16))
+        
+        gK_Pstbar_K_Pst =  transvec.x(17)
+        //printf("\n somatic gK_Pstbar_K_Pst %f", transvec.x(17))
+        
+        gSKv3_1bar_SKv3_1 =  transvec.x(18)
+        //printf("\n somatic gSKv3_1bar_SKv3_1 %f", transvec.x(18))
+        
+        decay_CaDynamics_E2 =  transvec.x(19)
+        //printf("\n somatic decay_CaDynamics_E2 %f", transvec.x(19))
+        
+        
+        e_pas =  transvec.x(20)
+        //printf("\n somatic e_pas %f", transvec.x(20))
+        
+        g_pas =  transvec.x(21)
+        //printf("\n somatic g_pas %f", transvec.x(21))
+        
+        
+        gImbar_Im =  transvec.x(22)
+        //printf("\n somatic gImbar_Im %f", transvec.x(22))
+        
+        gNaTs2_tbar_NaTs2_t = transvec.x(23)
+        //printf("\n somatic gNaTs2_tbar_NaTs2_t %f", transvec.x(23))
+        
+        gCabar_Ca =  transvec.x(24)
+        //printf("\n somatic gCabar_Ca %f", transvec.x(24))
+        
+       }
+       
+     
+     forsec cell.basal{
+        
+        gK_Tstbar_K_Tst =  transvec.x(25)
+        //printf("\n basal gK_Tstbar_K_Tst %f", transvec.x(25))
+        
+        gSKv3_1bar_SKv3_1 =  transvec.x(26)
+        //printf("\n basal gSKv3_1bar_SKv3_1 %f", transvec.x(26))
+        
+        gNap_Et2bar_Nap_Et2 =  transvec.x(27)
+        //printf("\n basal gNap_Et2bar_Nap_Et2 %f", transvec.x(27))
+
+        gNaTs2_tbar_NaTs2_t = transvec.x(28)
+        //printf("\n basal gNaTs2_tbar_NaTs2_t %f", transvec.x(28))
+        
+        gIhbar_Ih = transvec.x(29)
+        //printf("\n basal gIhbar_Ih %f", transvec.x(29))
+        
+        e_pas =  transvec.x(30)
+        //printf("\n basal e_pas %f", transvec.x(30))
+
+        g_pas =  transvec.x(31)
+        //printf("\n basal g_pas %f", transvec.x(31))
+        
+        
+        gImbar_Im =  transvec.x(32)
+        //printf("\n basal gImbar_Im %f", transvec.x(32))
+        
+    }
+    
+    forsec cell.apical{
+    
+        gK_Tstbar_K_Tst =  transvec.x(25)
+        //printf("\n apical gK_Tstbar_K_Tst %f", transvec.x(25))
+
+        gSKv3_1bar_SKv3_1 =  transvec.x(26)
+        //printf("\n apical gSKv3_1bar_SKv3_1 %f", transvec.x(26))
+
+        gNap_Et2bar_Nap_Et2 =  transvec.x(27)
+        //printf("\n apical gNap_Et2bar_Nap_Et2 %f", transvec.x(27))
+
+        gNaTs2_tbar_NaTs2_t = transvec.x(28)
+        //printf("\n apical gNaTs2_tbar_NaTs2_t %f", transvec.x(28))
+
+        gIhbar_Ih = transvec.x(29)
+        //printf("\n apical gIhbar_Ih %f", transvec.x(29))
+
+        g_pas =  transvec.x(30)
+        //printf("\n apical g_pas %f", transvec.x(30))
+
+        e_pas =  transvec.x(31)
+        //printf("\n apical e_pas %f", transvec.x(31))
+
+        gImbar_Im =  transvec.x(32)
+        //printf("\n apical gImbar_Im %f", transvec.x(31))
+
+        
+        
+        /*
+        
+        gK_Tstbar_K_Tst =  transvec.x(12)
+        gamma_CaDynamics_E2 =  transvec.x(13)
+        //printf("\n gamma_CaDynamics_E2 %f", transvec.x(13))
+
+        gNap_Et2bar_Nap_Et2 =  transvec.x(14)
+        gCa_LVAstbar_Ca_LVAst =  transvec.x(15)
+        gSK_E2bar_SK_E2 =  transvec.x(16)
+        gK_Pstbar_K_Pst =  transvec.x(17)
+        gSKv3_1bar_SKv3_1 =  transvec.x(18)
+        //printf("\n gSKv3_1bar_SKv3_1 %f", transvec.x(18))
+
+        decay_CaDynamics_E2 =  transvec.x(19)
+        g_pas =  transvec.x(20)
+        e_pas =  transvec.x(21)
+        */
+        
+    }
+    
+    
+    /*
+    forsec cell.apical{
+        gSKv3_1bar_SKv3_1 = 0
+        gNaTs2_tbar_NaTs2_t = 0
+        gImbar_Im = 0
+        
+        //printf("WARNING: apical params being set to zero -- change back later")
+    }
+    */
+    
+        
+}
