@@ -8,11 +8,11 @@ modelNum=$1
 passive=$2
 
 if [ "$passive" == "True" ]; then
-    FILE1=results/${modelNum}/target_volts_${modelNum}_passive.hdf5
-    FILE2=results/${modelNum}/stims_${modelNum}_passive.hdf5
+    FILE1=../../../../axonstandardized_data/results/${modelNum}/target_volts_${modelNum}_passive.hdf5
+    FILE2=../../../../axonstandardized_data/results/${modelNum}/stims_${modelNum}_passive.hdf5
 else
-    FILE1=results/${modelNum}/target_volts_${modelNum}.hdf5
-    FILE2=results/${modelNum}/stims_${modelNum}.hdf5
+    FILE1=../../../../axonstandardized_data/results/${modelNum}/target_volts_${modelNum}.hdf5
+    FILE2=../../../../axonstandardized_data/results/${modelNum}/stims_${modelNum}.hdf5
     
 fi
 

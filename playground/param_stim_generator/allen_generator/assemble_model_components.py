@@ -204,7 +204,7 @@ def save_results_hdf5(model_number, stims, target_volts, dts, \
         os.remove("../../../../axonstandardized_data/results/{}/stims_{}.hdf5".format(model_number,model_number))
     if os.path.isfile("../../../../axonstandardized_data/results/{}/target_volts_{}.hdf5".format(model_number,model_number)):
         os.remove("../../../../axonstandardized_data/results/{}/target_volts_{}.hdf5".format(model_number,model_number))
-    stim_file = h5py.File("results/{}/stims_{}.hdf5".format(model_number,model_number), "w")
+    stim_file = h5py.File("../../../../axonstandardized_data/results/{}/stims_{}.hdf5".format(model_number,model_number), "w")
     target_file = h5py.File("../../../../axonstandardized_data/results/{}/target_volts_{}.hdf5".format(model_number,model_number), "w")
     correspondance = []
     seen = []

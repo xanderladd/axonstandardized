@@ -108,7 +108,8 @@ pSortedSetsN is the sorted squared differences from the original param value aft
 '''
 # Save matrices as hdf5 files.
 #LOCAL config
-params_nwb = h5py.File('params/params_' +model + '_' + peeling +'.hdf5', 'w') # check correctness
+os.makedirs('../../axonstandardized_data/params', exist_ok=True)
+params_nwb = h5py.File('../../axonstandardized_data/params/params_' +model + '_' + peeling +'.hdf5', 'w') # check correctness
 params_nwb.create_dataset('orig_' + peeling, data=orig)
 
 

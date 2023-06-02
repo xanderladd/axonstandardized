@@ -18,17 +18,19 @@ SLURM_ARRAY_TASK_ID=$1
 SLURM_ARRAY_JOB_ID=${SLURM_JOB_ID}
 
 
-srcDir=`pwd`
+srcDir=''
 
 
-coreN=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
+coreN=${srcDir}'runs'/${model}_${peeling}_${runDate}_${custom}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=${SLURM_ARRAY_TASK_ID}
 wrkDir=${coreN}-${arrIdx}
 echo 'my wrkDir='${wrkDir}
+mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/volts_sand
 mkdir -p ${wrkDir}
 
 dirToRun="run_volts/run_volts_${model}${run_volts_extension}"
 cp -rp ${dirToRun} ${wrkDir}/
+cp -f run_volts/run_stim_hdf5.py ${wrkDir}/"run_volts_${model}${run_volts_extension}/"
 cd ${wrkDir}/"run_volts_${model}${run_volts_extension}"
 # nrnivmodl
 
@@ -38,6 +40,8 @@ cd ${wrkDir}/"run_volts_${model}${run_volts_extension}"
 
 export OMP_NUM_THREADS=1
 
+echo 'about to run run_stim_hdf5.py'
+echo 'current dir: ' `pwd`
 srun --mpi=pmi2 -n 64 -N 1 python run_stim_hdf5.py $arrIdx ${peeling} > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
 
 # mv slurm log to final destination - it is alwasy a job-array
