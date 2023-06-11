@@ -2,11 +2,10 @@
 #SBATCH --qos=regular
 #SBATCH --time=01:20:00
 #SBATCH --nodes=1
-#SBATCH --constraint=haswell
-#SBATCH --mail-user=zladd@berkeley.edu
+#SBATCH --constraint=cpu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m2043
-#SBATCH --array 1-75
+#SBATCH --array 1-25
 
 
 # change array 1-n, where n is the number of stims
@@ -34,6 +33,7 @@ fi
 srcDir=`pwd`
 
 
+
 coreN=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=${SLURM_ARRAY_TASK_ID}
 wrkDir=${coreN}-${arrIdx}
@@ -51,7 +51,11 @@ ls -l *
 
 export OMP_NUM_THREADS=1
 
-srun --mpi=pmi2 -n 64 python run_stim_hdf5.py $arrIdx ${peeling}
+
+# srun --mpi=pmi2 -n 64 python run_stim_hdf5.py $arrIdx ${peeling}
+
+
+srun -n 64 python run_stim_hdf5.py $arrIdx ${peeling}
 
 # mv slurm log to final destination - it is alwasy a job-array
 echo slurm left at:

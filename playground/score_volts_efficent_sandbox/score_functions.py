@@ -11,9 +11,9 @@ traj_score_dict = {}
 threshold = -10
 
 # These constants exist for efel features
-time_stamps = 30000
-starting_time_stamp = 1000
-ending_time_stamp = 7000
+time_stamps = 10000
+starting_time_stamp = 300
+ending_time_stamp = 9999
 
 ########################################################################
 # These functions are util functions.

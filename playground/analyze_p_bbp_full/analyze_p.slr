@@ -2,11 +2,9 @@
 
 #SBATCH -q regular
 #SBATCH -N 1
-#SBATCH -t 03:30:00
-#SBATCH -C haswell
+#SBATCH -t 00:30:00
+#SBATCH -C cpu
 #SBATCH -L SCRATCH
-#SBATCH --mail-user=zladd@berkeley.edu
-#SBATCH --mail-type=ALL
 
 
 
@@ -44,7 +42,7 @@ if [ ${allenOpt} == ${true} ]
     python analyze_p_bbp_full/stim_selector.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}  
 elif [ ${makeOpt} == ${true} ]
   then
-    srun --mpi=pmi2 -n 64 python analyze_p_bbp_full/analyze_p_parallel.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}
+    srun -n 64 python analyze_p_bbp_full/analyze_p_parallel.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}
   fi
   
 

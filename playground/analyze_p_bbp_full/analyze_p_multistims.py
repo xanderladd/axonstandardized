@@ -55,7 +55,6 @@ proportionToTrain = 0.7
 # If k = 1, then use the top stim only.
 #TODO: change k back to 20
 k = 20
-k = 10
 print("K IS : ", k)
 # random seed to use for train/validation on optimization
 seed = 500
@@ -171,8 +170,10 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
     # Optimize on the training set.
     train_result, train_score_mat, _ = optimize(stim_name, training)
     train_result = train_result.x
+    scatter_dot_size = 3.5
+
     if verbosity:
-        plt.scatter(training, train_result @ train_score_mat, label='Training Data')
+        plt.scatter(training, train_result @ train_score_mat, label='Training Data', color='C0', alpha=.3, edgecolor='C0', linewidth=1, s = scatter_dot_size)
         plt.plot(training, np.poly1d(np.polyfit(training, train_result @ train_score_mat, 1))(training))
 
     # Optimize on the entire set to establish a ground truth.
@@ -181,14 +182,14 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
     #test_result, test_score_mat, _ = optimize(stim_name, testing, obj_comb_vec = obj_comb_vec)
     test_result = test_result.x
     if verbosity:
-        plt.scatter(np.arange(N), train_result @ test_score_mat, label='Testing Data')
+        plt.scatter(np.arange(N), train_result @ test_score_mat, color='C1', alpha=.3, edgecolor='C1', linewidth=1, s = scatter_dot_size, label='Testing Data')
         plt.plot(np.arange(N), np.poly1d(np.polyfit(np.arange(N), train_result @ test_score_mat, 1))(np.arange(N)))
         #plt.scatter(np.arange(N), test_result @ test_score_mat, label='Ground Truth Test')
         #plt.plot(np.arange(N), np.poly1d(np.polyfit(np.arange(N), test_result @ test_score_mat, 1))(np.arange(N)))
 
         # Replot training and testing data on top of ground truth data.
-        plt.scatter(np.arange(N), train_result @ test_score_mat, color='C1')
-        plt.scatter(training, train_result @ train_score_mat, color='C0')
+        plt.scatter(np.arange(N), train_result @ test_score_mat, color='C1', alpha=.3, edgecolor='C1', linewidth=1, s = scatter_dot_size)
+        plt.scatter(training, train_result @ train_score_mat, color='C0', alpha=.3, edgecolor='C0', linewidth=1, s = scatter_dot_size)
 
         # Print stims used, which were the top k stims.
         if len(stim_name) == 1:
@@ -200,10 +201,9 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
         # Print weights
         print('Each row belongs to a single stim.')
         
-        print('Training Weights:\n', train_result.reshape([min(k, len(stim_name)), len(score_function_list)]))
-        print('Ground Truth Weights:\n', test_result.reshape([min(k, len(stim_name)), len(score_function_list)]))
+        # print('Training Weights:\n', train_result.reshape([min(k, len(stim_name)), len(score_function_list)]))
+        # print('Ground Truth Weights:\n', test_result.reshape([min(k, len(stim_name)), len(score_function_list)]))
         print()
-        
         # Print spearman scores for the three sets of sampled data.
         print('Training Spearman:', round(stat.spearmanr(np.asarray(training), train_result @ train_score_mat)[0], 5))
         print('Testing Spearman:', round(stat.spearmanr(np.arange(N), train_result @ test_score_mat)[0], 5))
@@ -216,7 +216,8 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
 
 
         plt.legend()
-        plt.savefig('./trainset_and_groundtruth_potassium.eps', format='eps', dpi=1000)
+        plt.savefig(f'./trainset_and_groundtruth_potassium.eps', format='eps', dpi=1000)
+        plt.savefig(f'./trainset_and_groundtruth_potassium.png', dpi=400)
         plt.show()
 
 #     if showHeatMap:

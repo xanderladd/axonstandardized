@@ -106,7 +106,7 @@ if stim_file == "neg_stims":
                         'voltage_deflection',\
                         'voltage_deflection_vb_ssse',\
                         'ohmic_input_resistance',\
-                        'ohmic_input_resistance_vb_ssse',\
+                        # 'ohmic_input_resistance_vb_ssse',\
                         'maximum_voltage',\
                         'minimum_voltage',\
                         'steady_state_voltage',\
@@ -127,7 +127,7 @@ elif stim_file == "both_stims":
                         'voltage_deflection',\
                         'voltage_deflection_vb_ssse',\
                         'ohmic_input_resistance',\
-                        'ohmic_input_resistance_vb_ssse',\
+                        # 'ohmic_input_resistance_vb_ssse',\
                         'maximum_voltage',\
                         'minimum_voltage',\
                         'steady_state_voltage',\
@@ -158,7 +158,7 @@ elif stim_file == "both_stims":
                         'AP_amplitude',\
                         'AHP_depth_abs_slow',\
                         'AHP_slow_time',\
-                        'depolarized_base',\
+                        # 'depolarized_base',\
                         'Spikecount',\
                         'AHP_depth',\
                         'AP_rise_indices',\
@@ -234,7 +234,7 @@ else:
                         'AP_amplitude',\
                         'AHP_depth_abs_slow',\
                         'AHP_slow_time',\
-                        'depolarized_base',\
+                        # 'depolarized_base',\
                         'Spikecount',\
                         'AHP_depth',\
                         'AP_rise_indices',\

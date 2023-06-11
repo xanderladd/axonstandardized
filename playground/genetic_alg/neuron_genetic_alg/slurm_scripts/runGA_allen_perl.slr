@@ -1,17 +1,14 @@
 #!/bin/bash
 
 #SBATCH --qos=regular
-#SBATCH --time=16:00:00
-#SBATCH --nodes=64
-#SBATCH --constraint=haswell
+#SBATCH --time=10:00:00
+#SBATCH --nodes=8
+#SBATCH --constraint=cpu
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
 
 
-module load openmpi
-CURRENTDATE=`date +%m_%d_%Y`
-startTIME=`date +%T`
-custom=''
+
 source ../../../../input.txt
 echo running GA
 echo OFFSPRING_SIZE is ${OFFSPRING_SIZE}
@@ -24,17 +21,16 @@ seed=1904 # used
 
 
 
-
 echo seed: ${seed}
 export OMP_NUM_THREADS=1
 
-srun -n 1000 --mpi=pmi2 python optimize_parameters_genetic_alg.py \
+srun -n 2000 python optimize_parameters_genetic_alg.py \
     -vv                                \
     --compile                          \
-    --offspring_size=1000              \
+    --offspring_size=10000              \
     --max_ngen=500                   \
     --seed=${seed}                     \
-    --checkpoint 10_14      \
+    --checkpoint 05_25      \
     --start  > GA_out.log  
     
 

@@ -1,126 +1,120 @@
 import numpy as np
 import h5py
 import os
-os.chdir("neuron_files/bbp/") # DO NOT keep this for when you want to run Allen
+import bluepyopt as bpop
+import pandas as pd
+from mpi4py import MPI
+import hoc_utils
+import run_model
+import config
+os.chdir(config.neuron_path) 
 from neuron import h
 os.chdir("../../")
-import bluepyopt as bpop
-import nrnUtils
-import score_functions as sf
-import efel
-import pandas as pd
 
-from config import *
+comm = MPI.COMM_WORLD
+global_rank = comm.Get_rank()
+size = comm.Get_size()
 
 
+global GEN
+GEN = 0
 
-normalizers = {}
-for stim_name in opt_stim_name_list:
-    with open(os.path.join(scores_path,'normalizers', stim_name.decode('ASCII'))+ \
-              '_normalizers.pkl','rb') as f:
-        normalizers[stim_name] = pickle.load(f)
-# constant to scale passsive scores by
-if passive:
-    PASSIVE_SCALAR = 1
-else:
-    PASSIVE_SCALAR = .05 # was 2
-
-
-# Value of dt in miliseconds
-dt = 0.02
-
-
-def run_model(param_set, stim_name_list):
-    h.load_file(run_file)
-    volts_list = []
-    for elem in stim_name_list:
-        curr_stim = h5py.File(stims_path, 'r')[elem][:]
-        total_params_num = len(param_set)
-        timestamps = np.array([dt for i in range(ntimestep)])
-        h.curr_stim = h.Vector().from_python(curr_stim)
-        h.transvec = h.Vector(total_params_num, 1).from_python(param_set)
-        h.stimtime = h.Matrix(1, len(timestamps)).from_vector(h.Vector().from_python(timestamps))
-        h.ntimestep = ntimestep
-        h.runStim()
-        out = h.vecOut.to_python()        
-        volts_list.append(out)
-    return np.array(volts_list)
-
-def evaluate_score_function(stim_name_list, target_volts_list, data_volts_list, weights):
-    
-    def passive_chisq(target, data):
-        return np.linalg.norm(target-data)**2   / np.linalg.norm(target)
-
-    def eval_function(target, data, function, dt):
-        if function in custom_score_functions:
-            score = getattr(sf, function)(target, data, dt)
-        else:
-            score = sf.eval_efel(function, target, data, dt)
-        return score
-
-    total_score = 0
-    psv_scores = 0
-    actv_scores = 0
-    active_ind = 0
-    for i in range(len(stim_name_list)):
-        curr_data_volt = data_volts_list[i]
-        curr_target_volt = target_volts_list[i]
-        stims_hdf5 = h5py.File(stims_path, 'r')
-        
-        curr_stim = stims_hdf5[dt_name][:]
-        # HANDLE PASSIVE STIM
-        if np.max(curr_target_volt) < 0:
-            psv_score = PASSIVE_SCALAR * len(score_function_ordered_list) * passive_chisq(curr_target_volt, curr_data_volt)
-            total_score += psv_score
-            psv_scores += psv_score
-            continue
-        # HANDLE ACTIVE STIM
-        for j in range(len(score_function_ordered_list)):
-            curr_sf = score_function_ordered_list[j].decode('ascii')
-            curr_weight = weights[len(score_function_ordered_list)*active_ind + j]
-            
-            if curr_weight == 0:
-                curr_score = 0
-            else:
-                curr_score = eval_function(curr_target_volt, curr_data_volt, curr_sf, dt)
-            if not np.isfinite(curr_score):
-                norm_score = 1000 # relatively a VERY high score
-            else:
-                norm_score = curr_score
-                norm_score = normalizers[stim_name_list[i]][curr_sf].transform(np.array(curr_score).reshape(-1,1))[0]  # load and use a saved sklean normalizer from previous step
-                norm_score = min(max(norm_score,-2),2) # allow a little lee-way
-                        
-            # print("ACTIVE SCORE: ", norm_score * curr_weight)
-            total_score += norm_score * curr_weight
-            actv_scores += norm_score * curr_weight
-        # we have evaled active stim, increment weight index by one
-        active_ind += 1
-    print('ACTIVE :', actv_scores, "PASV:", psv_scores)
-    return total_score
 
 class hoc_evaluator(bpop.evaluators.Evaluator):
     def __init__(self):
         """Constructor"""
-        params_ = nrnUtils.readParamsCSV(paramsCSV)
         super(hoc_evaluator, self).__init__()
-        self.opt_ind = params_opt_ind
-        params_ = [params_[i] for i in self.opt_ind]
-        self.orig_params = orig_params
-        self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval)) for name, minval, maxval in params_]
-        print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
-        print("Orig params:", self.orig_params)
-        self.weights = opt_weight_list
-        self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
-        self.objectives = [bpop.objectives.Objective('Weighted score functions')]
-        print("Init target volts")
-        self.target_volts_list = run_model(orig_params, self.opt_stim_list)
+        # CONFIG: get params_csv from config
+        names, self.orig_params, mins, maxs = hoc_utils.get_param_bounds(config.params_csv, config.params_opt_ind)
         
-    def evaluate_with_lists(self, param_values):
-        input_values = self.orig_params
-        for i in range(len(param_values)):
-            curr_opt_ind = self.opt_ind[i]
-            input_values[curr_opt_ind] = param_values[i]
-        data_volts_list = run_model(input_values, self.opt_stim_list)
-        score = evaluate_score_function(self.opt_stim_list, self.target_volts_list, data_volts_list, self.weights)
-        return [score]
+        if config.log_transform_params:
+            self.bases, self.orig_params, mins, maxs = hoc_utils.log_params(maxs, mins, self.orig_params)
+        
+        self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval)) for name, minval, maxval in zip(names, mins, maxs)]
+        print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in zip(names, mins, maxs)])
+        print("Orig params:", self.orig_params)
+        self.objectives = [bpop.objectives.Objective('Weighted score functions')]
 
+        self.target_volts = self.generate_target_volts()
+    
+    def generate_target_volts(self):
+        if not os.path.isfile('target_volts.npy'):
+            target_volts = run_model.run_model(self.orig_params, config.opt_stim_names)
+            np.save('target_volts.npy', target_volts)
+        else:
+            target_volts = np.load('target_volts.npy')
+        return target_volts
+        
+    def my_evaluate_invalid_fitness(toolbox, population):
+        '''Evaluate the individuals with an invalid fitness
+        Returns the count of individuals with invalid fitness
+        '''
+        invalid_ind = [ind for ind in population if not ind.fitness.valid]
+        # invalid_ind = [population[0]] + invalid_ind 
+        fitnesses = toolbox.evaluate(invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+        return len(invalid_ind)
+    
+
+    def assign_params(self, curr_params):            
+        modified_params = self.orig_params 
+        for i, curr_opt_ind in enumerate(config.params_opt_ind):
+            modified_params[curr_opt_ind] = curr_params[i]
+        # undo log x-form
+        if config.log_transform_params:
+            modified_params = np.array([math.pow(self.bases[i], modified_params[i]) for i in range(len(modified_params))])
+                
+        # turn param neg
+        # CONFIG Negative param inds
+        if len(config.negative_param_inds) > 0:
+            for negative_ind in config.negative_param_inds:
+                modified_params[negative_ind] = - np.abs(modified_params[negative_ind])
+        return modified_params
+    
+    def update_score_log(self, score, GEN):
+        argmin = np.argmin(score)
+        with open('score.log','a+') as f:
+            f.write(str(GEN) + " lowest score: " + str(np.nanmin(score)) + ' \n')
+            # f.write(str(GEN) + " : len score " + str(len(score)) + ' \n')
+    
+    def init_simulator_and_evaluate_with_lists(self, param_values):
+        global GEN
+        comm.Barrier() # avoid early bcast
+        param_values = comm.bcast(param_values, root=0)
+        scores, ranks, curr_rank = [], [], global_rank
+        
+        while curr_rank < len(param_values):
+            curr_params = self.assign_params(param_values[curr_rank])
+            simulated_volts = run_model.run_model(curr_params, config.opt_stim_names)
+            # CONFIG: use config.compare_weights
+            curr_score = hoc_utils.evaluate_score_function(config.opt_stim_names, self.target_volts, simulated_volts, config.weights)
+            curr_score = curr_score[0]
+            
+            scores.append(curr_score)
+            ranks.append(curr_rank)
+            curr_rank += size 
+            
+        comm.Barrier() # avoid early GATHER
+        scores, ranks = comm.gather(scores, root=0), comm.gather(ranks, root=0)
+        scores = hoc_utils.unest_mpi_arr(scores)
+        ranks = hoc_utils.unest_mpi_arr(ranks)
+        if global_rank == 0: 
+            assert all(i < j for i, j in zip(ranks, ranks[1:])), 'ranks are unordered'
+
+        scores = comm.bcast(scores, root=0)
+        scores = np.array(scores).reshape(-1,1)
+
+        # TODO: should not need these checks ever
+        # scores = np.where(~np.isfinite(scores), 10000000, scores)
+        # scores = np.clip(scores,-10000, 1200000)
+        
+        if global_rank  == 0:
+            self.update_score_log(scores, GEN)
+        
+        GEN += 1
+        return scores 
+
+
+import bluepyopt.deapext.algorithms as algo
+algo._evaluate_invalid_fitness = hoc_evaluator.my_evaluate_invalid_fitness
