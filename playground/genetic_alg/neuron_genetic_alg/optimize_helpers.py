@@ -3,6 +3,7 @@ from bluepyopt.deapext.stoppingCriteria import MaxNGen
 import deap.algorithms
 import deap.tools
 from deap import algorithms, base, creator, tools
+import bluepyopt.deapext.algorithms as algo
 import argparse
 import pickle
 import time
@@ -15,6 +16,18 @@ import logging
 from mpi4py import MPI
 import random
 import shutil
+import logging
+
+logger = logging.getLogger()
+old_update = bpop.deapext.utils.update_history_and_hof 
+best_indvs = []
+
+
+comm = MPI.COMM_WORLD
+global_rank = comm.Get_rank()
+size = comm.Get_size()
+gen_counter = 0
+cp_freq = 1
 
 
 def get_parser():
@@ -84,6 +97,7 @@ def my_ea(
         cp_filename=None,
         continue_cp=False,
         terminator=None,
+        cp_period=None,
         param_names=[]):
     r"""This is the :math:`(~\alpha,\mu~,~\lambda)` evolutionary algorithm
     Args:
@@ -100,6 +114,7 @@ def my_ea(
         continue_cp(bool): whether to continue
     """
     global starting_pop_hack
+    
 
     if cp_filename:
         cp_filename_tmp = cp_filename + '.tmp'
@@ -143,10 +158,13 @@ def my_ea(
     else:
         # Start a new evolution
         start_gen = 1
+        print("NOT ******** setting start pop hack to false")
+        starting_pop_hack = 'starting_pop.pkl' #alse
+        starting_pop_hack  = False
         if starting_pop_hack and global_rank == 0:
             with open(starting_pop_hack,'rb') as f: data = pickle.load(f)
             population = data['population']
-        
+         
         population = comm.bcast(population, root=0)
         parents = population[:]
         logbook = deap.tools.Logbook()
@@ -165,10 +183,16 @@ def my_ea(
     stopping_params = {"gen": gen}
     
     while not(algo._check_stopping_criteria(stopping_criteria, stopping_params)):
-        offspring = algo._get_offspring(parents, toolbox, cxpb, mutpb)
+        if global_rank == 0:
+            offspring = algo._get_offspring(parents, toolbox, cxpb, mutpb)
+        else:
+            offspring = None
+        
+        offspring = comm.bcast(offspring, root=0)
+        parents = comm.bcast(parents, root=0)
         
         population = parents + offspring
-
+        
         invalid_count = algo._evaluate_invalid_fitness(toolbox, offspring)
         # algo._update_history_and_hof(halloffame, history, population)
         bpop.deapext.utils.update_history_and_hof(halloffame, history, population)

@@ -27,16 +27,11 @@ if [ ${makeParams} == ${true} ]
 
 
 #making directory for the run
-#making directory for the run
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}
-wrkDir=runs/${model}_${peeling}_${runDate}_${custom}
-cp input.txt ${wrkDir}/
+mkdir -p runs/${model}_${peeling}_${runDate}${custom}
+wrkDir=runs/${model}_${peeling}_${runDate}${custom}
 mkdir -p ${wrkDir}/'volts'
 mkdir -p ${wrkDir}/'scores'
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'stims'
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'target_volts'
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'objectives'
+mkdir -p runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 
 
 #module load tensorflow/intel-1.12.0-py36

@@ -2,10 +2,9 @@ import bluepyopt as bpop
 # when things are setup, make this a conditional import
 #import hoc_evaluator_allen as hoc_ev
 import config
-if model == 'allen':
-    import hoc_evaluator_allen as hoc_ev
-else:
-    import hoc_evaluator as hoc_ev
+import hoc_evaluator as hoc_ev
+# import hoc_eval_orig as hoc_ev
+
 import bluepyopt.deapext.algorithms as algo
 import pickle
 import time
@@ -22,7 +21,8 @@ import optimize_helpers as helpers
 comm = MPI.COMM_WORLD
 global_rank = comm.Get_rank()
 size = comm.Get_size()
-
+global starting_pop_hack
+starting_pop_hack=''
 
 
 logger = logging.getLogger(__name__)
@@ -61,9 +61,9 @@ def create_optimizer(args):
         evaluator=evaluator,
         map_function=map_function,
         seed=seed,
-        eta=10, # was 20
-        mutpb=1,
-        cxpb=1)
+        eta=20, # was 20
+        mutpb=.3,
+        cxpb=.7)
 
     return opt
 
