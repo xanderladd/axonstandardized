@@ -9,7 +9,7 @@ dest=$3
 
 if [ "$passive" == "True" ]; then
 
-    cp ../../axonstandardized_data/results/${modelNum}/target_volts_${modelNum}_passive.hdf5 $dest/target_volts
+    cp ../../axonstandardized_data/results/${modelNum}/target_volts_${modelNum}_passive.hdf5 ../../axonstandardized_data/target_volts
         
     cp ../../axonstandardized_data/results/${modelNum}/stims_${modelNum}_passive.hdf5 $dest/stims
     cp ../../axonstandardized_data/results/${modelNum}/stims_${modelNum}_passive.hdf5 ../../axonstandardized_data/stims/stims_${modelNum}_passive.hdf5
@@ -18,7 +18,7 @@ if [ "$passive" == "True" ]; then
     
 else
     
-    cp ../../axonstandardized_data/results/${modelNum}/target_volts_${modelNum}.hdf5 $dest/target_volts
+    cp ../../axonstandardized_data/results/${modelNum}/target_volts_${modelNum}.hdf5 ../../axonstandardized_data/target_volts
         
     cp ../../axonstandardized_data/results/${modelNum}/stims_${modelNum}.hdf5 $dest/stims
     

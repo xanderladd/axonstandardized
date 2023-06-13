@@ -40,9 +40,7 @@ cd ${wrkDir}/"run_volts_${model}${run_volts_extension}"
 
 export OMP_NUM_THREADS=1
 
-echo 'about to run run_stim_hdf5.py'
-echo 'current dir: ' `pwd`
-srun --mpi=pmi2 -n 64 -N 1 python run_stim_hdf5.py $arrIdx ${peeling} > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
+srun -n 64 -N $num_nodes python run_stim_hdf5.py $arrIdx ${peeling} > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
 
 # mv slurm log to final destination - it is alwasy a job-array
 echo slurm left at:
