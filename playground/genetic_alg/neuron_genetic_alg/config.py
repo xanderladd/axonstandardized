@@ -36,8 +36,12 @@ model_num = inputs['modelNum']
 passive = eval(inputs['passive'])
 orig_name = "orig_" + peeling
 orig_params = h5py.File('../params/params_' + model + '_' + peeling + '.hdf5', 'r')[orig_name][0]
+
 if 'dt' in inputs and inputs['dt'] != 'null':
     dt = float(inputs['dt'])
+else:
+    dt = None
+    
 if 'timesteps' in inputs and inputs['timesteps'] != 'null':
     ntimestep = int(inputs['timesteps'])
 else:

@@ -1,1 +1,0 @@
-Testing Spearman: 0.75394Ground Truth Spearman: 0.75714Training Spearman: 0.76212
