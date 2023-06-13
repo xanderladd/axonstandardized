@@ -2,11 +2,10 @@
 #SBATCH --qos=regular
 #SBATCH --time=00:40:00
 #SBATCH --nodes=1
-#SBATCH --constraint=haswell
-#SBATCH --mail-user=zladd@berkeley.edu
+#SBATCH --constraint=cpu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m2043
-#SBATCH --array 70-300%40
+#SBATCH --array 1-22
 
 # change array 1-n, where n is the number of stims
 
@@ -45,8 +44,8 @@ export OMP_NUM_THREADS=1
 echo $arrIdx ${model} ${peeling}
 
 if [[ ${model} = 'allen' ]]; then
-    srun --mpi=pmi2 -n 64 python score_volts_hdf5_efficent_sandbox_allen.py $arrIdx ${model} ${peeling}
+    srun  -n 64 python score_volts_hdf5_efficent_sandbox_allen.py $arrIdx ${model} ${peeling}
 else 
-    srun --mpi=pmi2 -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx ${model} ${peeling}
+    srun -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx ${model} ${peeling}
 fi
 echo DONE!E!E!!!!!!
