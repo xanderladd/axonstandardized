@@ -5,7 +5,7 @@
 #SBATCH --constraint=cpu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m2043
-#SBATCH --array 1-25
+#SBATCH --array 1-2
 
 
 # change array 1-n, where n is the number of stims
@@ -33,36 +33,27 @@ fi
 srcDir=`pwd`
 
 
-
-coreN=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
+srcDir=runs/${model}_${peeling}_${runDate}_${custom}
+coreN=${srcDir}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=${SLURM_ARRAY_TASK_ID}
 wrkDir=${coreN}-${arrIdx}
 echo 'my wrkDir='${wrkDir}
 mkdir -p ${wrkDir}
 
-dirToRun="run_volts/run_volts_${model}"
-cp -rp ${dirToRun} ${wrkDir}/
-cd ${wrkDir}/"run_volts_${model}"
-nrnivmodl
-
-echo inventore at start
-pwd
-ls -l *
+cp -rp volts_sandbox/run_volts ${wrkDir}/run_volts
+cd ${wrkDir}/"run_volts"
+cd neuron_files/${model}/
+nrnivmodl 
+cd ../../
 
 export OMP_NUM_THREADS=1
 
 
-# srun --mpi=pmi2 -n 64 python run_stim_hdf5.py $arrIdx ${peeling}
-
-
 srun -n 64 python run_stim_hdf5.py $arrIdx ${peeling}
 
-# mv slurm log to final destination - it is alwasy a job-array
-echo slurm left at:
-pwd
-# mv slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out ..
+echo COMPLETE
 
-#Y_TASK_ID}.out ..
+
 
 
 

@@ -39,8 +39,8 @@ model = sys.argv[2]
 peeling = sys.argv[3]
 
 # path setting required
-params = "/params/params_" + model + "_" + peeling + ".hdf5"
-params_file_name = "./params/params_" + model + "_" + peeling + ".hdf5"
+params = "../../../../../../../axonstandardized_data/params/params_" + model + "_" + peeling + ".hdf5"
+params_file_name = "../../../../../../../axonstandardized_data/params/params_" + model + "_" + peeling + ".hdf5"
 
 
 volts_path = '../../../volts/'
@@ -63,8 +63,9 @@ with open('../../../input.txt', 'r') as f:
                 passive = bool(value)
 
                 
-stim_file = h5py.File(f'../../../stims/{stim_file}.hdf5','r')
+stim_file = h5py.File(f'../../../../../../../axonstandardized_data/stims/{stim_file}.hdf5','r')
 volts_name_list = sorted(os.listdir(volts_path))
+
 volts_name_list = [volt_name for volt_name in volts_name_list if "hdf5" in volt_name]
 params = h5py.File(params_file_name, 'r')
 
@@ -81,8 +82,6 @@ else:
 for volts in volts_name_list:
     if os.path.isfile(os.path.join(output_path,volts.replace('volts','scores'))):
         volts_name_list.remove(volts)
-        
-print("looking at volts: ",volts_name_list)
 
 custom_score_functions = [
                     sf.chi_square_normal,\
@@ -298,6 +297,16 @@ for k in range(len(volts_name_list)):
     orig_volts_name = 'orig_'+curr_stim_name
     pin_volts_name = 'pin_'+curr_stim_name
     #pdx_volts_name = 'pdx_'+curr_stim_name
+    
+    with open("../../../../../../../d.txt", 'w') as g:
+        g.write('volts_name_list: ' + str(volts_name_list))
+        curr_volts_name = volts_name_list[0]
+        curr_stim_name = curr_volts_name.replace('_volts.hdf5', '')
+        orig_volts_name = 'orig_'+curr_stim_name
+        pin_volts_name = 'pin_'+curr_stim_name
+        g.write("\n" + volts_path+curr_volts_name)
+        with open(volts_path+curr_volts_name, 'r') as h:
+            g.write('\nsuccessful')
     if "hdf5" in curr_volts_name:
         volts = h5py.File(volts_path+curr_volts_name, 'r')
     else:

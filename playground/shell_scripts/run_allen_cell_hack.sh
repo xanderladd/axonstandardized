@@ -12,16 +12,14 @@ true=True # bash script pro lol
 
 
 #making directory for the run
+mkdir -p runs
 mkdir -p runs/${model}_${peeling}_${runDate}_${custom}
 wrkDir=runs/${model}_${peeling}_${runDate}_${custom}
 cp input.txt ${wrkDir}/
-mkdir -p ${wrkDir}/'volts'
-mkdir -p ${wrkDir}/'scores'
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'stims'
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'target_volts'
-mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'objectives'
-
+mkdir -p ${wrkDir}/volts
+mkdir -p ${wrkDir}/scores
+mkdir -p ${wrkDir}/stims
+mkdir -p ${wrkDir}/objectives
 
 
 if [ ${makeStims} == ${true} ]
@@ -48,7 +46,9 @@ fi
 
  
 # check that files are seteup correctly
+echo "step 1 done"
 sh param_stim_generator/allen_generator/check_files.sh ${modelNum} ${passive}
+echo "step 2 done"
 
 if [ $? != 0 ];
 then
@@ -58,7 +58,8 @@ fi
 echo "stims / target volts made"
 
 # move them up
-sh param_stim_generator/allen_generator/move_files.sh ${modelNum} ${passive} runs/${model}_${peeling}_${runDate}_${custom}/
+sh param_stim_generator/allen_generator/move_files.sh ${modelNum} ${passive} runs/${model}_${peeling}_${runDate}_${custom}
+echo "step 3 done"
 
 
 if [ ${makeParams} == ${true} ]
@@ -81,6 +82,9 @@ if [ ${makeParams} == ${true} ]
 # to match those in input.txt
 # if num_volts is 0 and num_nodes is 10 will split all stims between 10 nodes 
 python modifySandboxArray.py $num_volts $num_nodes
+
+echo "step 4 done"
+
 #LOCAL, uses shell script for local imitation
 if [ ${makeVolts} == ${true} ]
   then
@@ -105,7 +109,7 @@ if [ ${wait4volts} == ${true} ] # if we're making volts, check we've made em all
     #waits until slurm has put enough volts in directory
 
     shopt -s nullglob
-    STIMFILE="stims/${stim_file}.hdf5"
+    STIMFILE="../../axonstandardized_data/stims/${stim_file}.hdf5"
     VOLT_PREFIX="runs/${model}_${peeling}_${runDate}_${custom}/volts"
     h5dump --header $STIMFILE | head -n $(expr 2 + ${num_volts} \* 4) | while read line; do
         if [[ "$line" == *"DATASET"* ]]; then
@@ -123,8 +127,11 @@ if [ ${wait4volts} == ${true} ] # if we're making volts, check we've made em all
     shopt -u nullglob
 fi
 #move the slurm into runs
+echo "step 5 done"
+
 mv slurm* runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
 
+echo "step 6 done"
 
 
 
@@ -142,7 +149,7 @@ if [ ${wait4scores} == ${true} ] # if making scores, check we made em
 
     shopt -s nullglob
 
-    STIMFILE="stims/${stim_file}.hdf5"
+    STIMFILE="../../axonstandardized_data/stims/${stim_file}.hdf5"
     VOLT_PREFIX="runs/${model}_${peeling}_${runDate}_${custom}/scores"
     h5dump --header $STIMFILE | head -n $(expr 2 + ${num_volts} \* 4) | while read line; do
         if [[ "$line" == *"DATASET"* ]]; then
@@ -164,16 +171,14 @@ fi
 
 #move slurm into runs
 mv slurm* runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
-mkdir ${wrkDir}/genetic_alg
+mkdir -p ${wrkDir}/genetic_alg
 dirToRun="genetic_alg/neuron_genetic_alg"
-cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
-dirToRun="genetic_alg/GPU_genetic_alg"
 cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
 dirToRun="genetic_alg/*"
 cp -p ${dirToRun} ${wrkDir}/genetic_alg/
 
-mkdir ${wrkDir}/genetic_alg/optimization_results/
-mkdir ${wrkDir}/genetic_alg/objectives/
+mkdir -p ${wrkDir}/genetic_alg/optimization_results/
+mkdir -p ${wrkDir}/genetic_alg/objectives/
 
 
 

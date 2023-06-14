@@ -31,7 +31,7 @@ assert 'model' in inputs, "No model specificed"
 assert 'peeling' in inputs, "No peeling specificed"
 assert 'seed' in inputs, "No seed specificed"
 
-assert inputs['model'] in ['mainen', 'bbp', 'allen', 'compare_allen'], "Model must be from: \'allen\' \'mainen\', \'bbp\' or \'compare_allen\'. Do not include quotes."
+assert inputs['model'] in ['mainen', 'bbp', 'allen', 'compare_bbp'], "Model must be from: \'allen\' \'mainen\', \'bbp\' or \'compare_allen\'. Do not include quotes."
 
 
 assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."
@@ -108,7 +108,8 @@ pSortedSetsN is the sorted squared differences from the original param value aft
 '''
 # Save matrices as hdf5 files.
 #LOCAL config
-params_nwb = h5py.File('params/params_' +model + '_' + peeling +'.hdf5', 'w') # check correctness
+os.makedirs('../../axonstandardized_data/params', exist_ok=True)
+params_nwb = h5py.File('../../axonstandardized_data/params/params_' +model + '_' + peeling +'.hdf5', 'w') # check correctness
 params_nwb.create_dataset('orig_' + peeling, data=orig)
 
 

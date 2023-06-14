@@ -25,7 +25,7 @@ if 'bbp' in config.model:
         for curr_stim_name in stim_name_list:
             total_params_num = len(param_set)
             curr_stim = stims[curr_stim_name][:]
-            dt = retrieve_dt(curr_stim_name, stims, dt=config.dt)
+            dt = retrieve_dt(curr_stim_name, stims, dt=dt)
             timestamps = np.array([dt for i in range(config.ntimestep)])
             h.curr_stim = h.Vector().from_python(curr_stim)
             h.transvec = h.Vector(total_params_num, 1).from_python(param_set)

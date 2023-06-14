@@ -9,7 +9,7 @@ for n_batch in $(eval echo "{0..$n_batches}"); do
     end_ind=$(((n_batch+1) * nnodes))
     for i in  $(eval echo "{$start_ind..$end_ind}")}; do
         i=$(echo "$i" | tr -dc '0-9')
-        sh volts_sandbox_setup/launch.sh $i &
+        sh volts_sandbox/launch.sh $i &
     done
     wait
 done
