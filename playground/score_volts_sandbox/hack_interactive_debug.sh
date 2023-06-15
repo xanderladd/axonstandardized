@@ -4,7 +4,7 @@
 #!/bin/bash
 
 
-nnodes=`srun -n 1 echo $SLURM_NNODES`
+nnodes=1
 source ./input.txt
 n_batches=$((num_volts / nnodes))
 for n_batch in $(eval echo "{0..$n_batches}"); do
@@ -12,7 +12,7 @@ for n_batch in $(eval echo "{0..$n_batches}"); do
     end_ind=$(((n_batch+1) * nnodes))
     for i in  $(eval echo "{$start_ind..$end_ind}")}; do
         i=$(echo "$i" | tr -dc '0-9')
-        sh score_volts_sandbox/launch.sh $i &
+        sh score_volts_sandbox/launch_debug.sh $i &
     done
     wait
 done

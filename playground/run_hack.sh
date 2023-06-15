@@ -73,8 +73,9 @@ if [ ${makeParams} == ${true} ]
     echo "Params made"
   fi
   
-  
-
+ 
+cp -rp ${data_dir}/params ${wrkDir}/${dirToRun}/
+cp -rp ${data_dir}/stims ${wrkDir}/${dirToRun}/
 
 #source ~/neuron-setup.ext
 
@@ -137,7 +138,7 @@ echo "step 6 done"
 
 if [ ${makeScores} == ${true} ]
   then
-    sh score_volts_efficent_sandbox/hack_interactive.sh
+    sh score_volts_sandbox/hack_interactive.sh
   fi
 
 

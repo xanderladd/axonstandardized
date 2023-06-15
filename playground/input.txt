@@ -1,4 +1,5 @@
 user=ladd12
+data_dir=/pscratch/sd/z/zladd/axonstandardized_data
 model=compare_bbp
 peeling=full
 modelNum=485880739
@@ -10,7 +11,7 @@ nSubZones=500
 nPerSubZone=10
 norm=100
 dx=0.001
-num_volts=5
+num_volts=1
 num_nodes=1
 stim_file=stims_485880739
 params=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16

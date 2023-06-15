@@ -12,6 +12,7 @@ import math
 from sklearn.preprocessing import MinMaxScaler
 import pickle
 import re
+import config
 
 def split(container, count):
     return [container[_i::count] for _i in range(count)]
@@ -33,56 +34,30 @@ def eval_function(target, data, function, dt):
     return score
 
 # time step in miliseconds
-dt = 0.02
+dt = config.dt
 max_score = 1000
-model = sys.argv[2]
-peeling = sys.argv[3]
 
-# path setting required
-params = "../../../../../../../axonstandardized_data/params/params_" + model + "_" + peeling + ".hdf5"
-params_file_name = "../../../../../../../axonstandardized_data/params/params_" + model + "_" + peeling + ".hdf5"
-
-
-volts_path = '../../../volts/'
-output_path = '../../../scores/'
-
-# modification to run stims 10 Nodes X 30 stims = 300stims
-with open('../../../input.txt', 'r') as f:
-    for line in f:
-        if "=" in line:
-            name, value = line.split("=")
-            if name == "num_nodes":
-                num_nodes = int(value)
-            if name == "num_volts":
-                num_volts = int(value)
-            if name == "stim_file":
-                stim_file = value.replace('\n','')
-            if name == 'modelNum':
-                modelNum = int(value)
-            if name == 'passive':
-                passive = bool(value)
-
-                
-stim_file = h5py.File(f'../../../../../../../axonstandardized_data/stims/{stim_file}.hdf5','r')
-volts_name_list = sorted(os.listdir(volts_path))
-
+stim_file = h5py.File(f'{config.data_dir}/stims/{config.stim_file}.hdf5','r')
+volts_name_list = sorted(os.listdir(config.volts_path))
 volts_name_list = [volt_name for volt_name in volts_name_list if "hdf5" in volt_name]
-params = h5py.File(params_file_name, 'r')
+params = h5py.File(config.params_path, 'r')
 
 num_volts_to_run = 1
 i=int(sys.argv[1])
-if i == 0 and num_nodes == 1:
+if i == 0 and config.num_nodes == 1:
     volts_name_list = volts_name_list
-elif num_nodes > 1 and num_volts == 0:
+elif config.num_nodes > 1 and config.num_volts == 0:
     num_volts_to_run = math.ceil(len(volts_name_list) / num_nodes)
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
 else:
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
     
 for volts in volts_name_list:
-    if os.path.isfile(os.path.join(output_path,volts.replace('volts','scores'))):
+    if os.path.isfile(os.path.join(config.output_path,volts.replace('volts','scores'))):
         volts_name_list.remove(volts)
 
+print(volts_name_list, "volts to run"
+     )
 custom_score_functions = [
                     sf.chi_square_normal,\
                     #sf.abs_cumsum_diff,\
@@ -304,11 +279,11 @@ for k in range(len(volts_name_list)):
         curr_stim_name = curr_volts_name.replace('_volts.hdf5', '')
         orig_volts_name = 'orig_'+curr_stim_name
         pin_volts_name = 'pin_'+curr_stim_name
-        g.write("\n" + volts_path+curr_volts_name)
-        with open(volts_path+curr_volts_name, 'r') as h:
+        g.write("\n" + config.volts_path+curr_volts_name)
+        with open(config.volts_path+curr_volts_name, 'r') as h:
             g.write('\nsuccessful')
     if "hdf5" in curr_volts_name:
-        volts = h5py.File(volts_path+curr_volts_name, 'r')
+        volts = h5py.File(config.volts_path+curr_volts_name, 'r')
     else:
         continue
     pin_size = volts[pin_volts_name].shape[0]
@@ -345,6 +320,10 @@ for k in range(len(volts_name_list)):
             
         curr_function = score_functions[function_ind]
         orig_volts_data = volts[orig_volts_name][:]
+        
+        if orig_volts_data.shape[1] == config.ntimestep:
+            orig_volts_data = orig_volts_data[0]
+            
         if prefix == 'pin':
             curr_volts_data = volts[pin_volts_name][volts_ind]
         #elif prefix == 'pdx':
@@ -371,7 +350,7 @@ for k in range(len(volts_name_list)):
             for key in k:
                 flattened_dict[key] = d[key]
 
-        scores_hdf5 = h5py.File(output_path+curr_stim_name+'_scores.hdf5', 'w')
+        scores_hdf5 = h5py.File(config.output_path+curr_stim_name+'_scores.hdf5', 'w')
         score_function_names = []
         normalizers = {}
         for i in range(len(score_functions)):
@@ -415,7 +394,7 @@ for k in range(len(volts_name_list)):
         scores_hdf5.create_dataset('stim_name', data=np.array([np.string_(curr_stim_name)]))
         scores_hdf5.close()
         
-        norm_dir = os.path.join(output_path, 'normalizers')
+        norm_dir = os.path.join(config.output_path, 'normalizers')
         norm_path = os.path.join(norm_dir, f"{curr_stim_name}_normalizers.pkl")
         os.makedirs(norm_dir, exist_ok=True)
         with open(norm_path, 'wb') as f:

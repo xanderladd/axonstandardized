@@ -1,6 +1,17 @@
 import numpy as np
 import math
 import efel
+import config 
+
+import pickle
+from mpi4py import MPI
+import math
+import score_functions as sf
+import os
+
+comm = MPI.COMM_WORLD
+global_rank = comm.Get_rank()
+size = comm.Get_size()
 
 # These are here for efficiency. In order to avoid redundant computation, we cache the results for 
 # comp_width_helper, comp_height_helper and traj_score_helper. The name of stim and index as a string
@@ -11,10 +22,9 @@ traj_score_dict = {}
 threshold = -10
 
 # These constants exist for efel features
-time_stamps = 10000
-starting_time_stamp = 300
-ending_time_stamp = 9999
-
+time_stamps = config.ntimestep
+starting_time_stamp = 1000
+ending_time_stamp = config.ntimestep - 3000
 ########################################################################
 # These functions are util functions.
 def zero_pad(list1, list2):
@@ -455,7 +465,16 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     curr_trace_target['stim_start'], curr_trace_data['stim_start'] = [stim_start], [stim_start]
     curr_trace_target['stim_end'], curr_trace_data['stim_end'] = [stim_end], [stim_end]
     traces = [curr_trace_target, curr_trace_data]
+    
+    # dbg_path = f"features/trouble_{global_rank}.pkl"
+    # with open(dbg_path, 'wb') as f:
+    #     data = {'traces': traces, 'feature': feature_name}
+    #     pickle.dump(data,f )
+        
     traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
+    
+    # if os.path.isfile(dbg_path):
+    #     os.remove(dbg_path)
     diff_feature = diff_lists(traces_results[0][feature_name], traces_results[1][feature_name])
     return diff_feature
  
