@@ -12,9 +12,7 @@
 # read and assn input text ver simply
 source ./input.txt
 
-echo "start-A "`hostname`" task="${job_sh}
-echo  'cscratch='${CSCRATCH}
-echo  'scratch='${SCRATCH}
+
 echo SLURM_ARRAY_TASK_ID=${SLURM_ARRAY_TASK_ID}
 echo SLURM_ARRAY_JOB_ID=${SLURM_ARRAY_JOB_ID}
 if [[ -z "$SLURM_ARRAY_TASK_ID" ]]
@@ -22,23 +20,19 @@ then
     echo Not running Slurm Array
     SLURM_ARRAY_TASK_ID=0
 fi
-srcDir=`pwd`
 
-coreN=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}/'scores_sand'/${SLURM_ARRAY_JOB_ID}
+srcDir=runs/${model}_${peeling}_${runDate}_${custom}
+coreN=${srcDir}/'scores_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=${SLURM_ARRAY_TASK_ID}
 wrkDir=${coreN}-${arrIdx}
 echo 'my wrkDir='${wrkDir}
 mkdir -p ${wrkDir}
 
-dirToRun='score_volts_efficent_sandbox'
+
+dirToRun='score_volts_sandbox'
 cp -rp ${dirToRun} ${wrkDir}/
-cp -rp params ${wrkDir}/${dirToRun}/
 cp input.txt ${wrkDir}/${dirToRun}/
 cd ${wrkDir}/${dirToRun}
-
-echo inventore at start
-pwd
-ls -l *
 export OMP_NUM_THREADS=1
 
 echo $arrIdx ${model} ${peeling}
@@ -46,6 +40,6 @@ echo $arrIdx ${model} ${peeling}
 if [[ ${model} = 'allen' ]]; then
     srun  -n 64 python score_volts_hdf5_efficent_sandbox_allen.py $arrIdx ${model} ${peeling}
 else 
-    srun -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx ${model} ${peeling}
+    srun -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx
 fi
 echo DONE!E!E!!!!!!

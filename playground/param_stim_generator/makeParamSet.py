@@ -25,11 +25,12 @@ for line in input_lines:
     if "\n" not in vals:
         inputs[vals[0]] = vals[1][:len(vals[1])-1]
 
-assert 'params' in inputs, "No params specificed"
+assert 'params' in inputs, "No params specified"
+assert 'data_dir' in inputs, "No data directory specified"
 assert 'user' in inputs, "No user specified"
-assert 'model' in inputs, "No model specificed"
-assert 'peeling' in inputs, "No peeling specificed"
-assert 'seed' in inputs, "No seed specificed"
+assert 'model' in inputs, "No model specified"
+assert 'peeling' in inputs, "No peeling specified"
+assert 'seed' in inputs, "No seed specified"
 
 assert inputs['model'] in ['mainen', 'bbp', 'allen', 'compare_bbp'], "Model must be from: \'allen\' \'mainen\', \'bbp\' or \'compare_allen\'. Do not include quotes."
 
@@ -57,6 +58,7 @@ dx = float(inputs['dx']) if 'dx' in inputs else 0.001
 model = inputs['model']
 peeling = inputs['peeling']
 user = inputs['user']
+data_dir = inputs['data_dir']
 params = [int(p) for p in inputs['params']]
 opt_ind = np.array(params) - 1
 print(params)
@@ -73,8 +75,6 @@ else:
 
 # data is the parsed csv, orig is a row vector of base values for each param (1 x 12)
 data, orig, ch_names = helper.parse_csv(file_path)
-
-
 
 
 #xander 6/26
@@ -108,8 +108,8 @@ pSortedSetsN is the sorted squared differences from the original param value aft
 '''
 # Save matrices as hdf5 files.
 #LOCAL config
-os.makedirs('../../axonstandardized_data/params', exist_ok=True)
-params_nwb = h5py.File('../../axonstandardized_data/params/params_' +model + '_' + peeling +'.hdf5', 'w') # check correctness
+os.makedirs(f'{data_dir}/params', exist_ok=True)
+params_nwb = h5py.File(f'{data_dir}/params/params_' +model + '_' + peeling +'.hdf5', 'w') # check correctness
 params_nwb.create_dataset('orig_' + peeling, data=orig)
 
 
