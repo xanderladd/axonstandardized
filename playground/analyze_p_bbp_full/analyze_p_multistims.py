@@ -38,7 +38,7 @@ opt_path = wrkDir + '/genetic_alg/optimization_results/opt_result_single_stim_' 
 save_path = wrkDir + '/genetic_alg/objectives'
 if not os.path.isdir(save_path):
     os.mkdir(save_path)
-params_path = 'params/params_' + model + '_' + peeling + '.hdf5'
+params_path = wrkDir + '/params/params_' + model + '_' + peeling + '.hdf5'
 scores_path =  wrkDir + '/scores/'
 params_file = h5py.File(params_path, 'r')
 opt_file = h5py.File(opt_path, 'r')
