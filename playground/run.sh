@@ -71,6 +71,10 @@ if [ ${makeParams} == ${true} ]
     echo "Params made"
   fi
   
+
+cp -rp ${data_dir}/params ${wrkDir}/${dirToRun}/
+cp -rp ${data_dir}/stims ${wrkDir}/${dirToRun}/
+
   
 # set sandbox array parameters in score_sandbox and volt_sandbox
 # to match those in input.txt

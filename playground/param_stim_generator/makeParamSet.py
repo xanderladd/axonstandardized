@@ -68,9 +68,9 @@ pin_sample_ind = list(range(1000))
 
 # Set the file path for the params csv here.
 if inputs['usePrevParams'] == "True":
-    file_path = 'param_stim_generator/params_reference/params_' + model + '_' + peeling + '_prev.csv'
+    file_path = f'{data_dir}/params/params_' + model + '_' + peeling + '_prev.csv'
 else:
-    file_path = 'param_stim_generator/params_reference/params_' + model + '_' + peeling + '.csv'
+    file_path = f'{data_dir}/params/params_' + model + '_' + peeling + '.csv'
 
 
 # data is the parsed csv, orig is a row vector of base values for each param (1 x 12)

@@ -5,7 +5,7 @@
 #SBATCH --constraint=cpu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m2043
-#SBATCH --array 1-25%40
+#SBATCH --array 1-1%40
 
 # change array 1-n, where n is the number of stims
 
@@ -42,4 +42,4 @@ if [[ ${model} = 'allen' ]]; then
 else 
     srun -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx
 fi
-echo DONE!E!E!!!!!!
+echo DONE!E!E!!!!!!!

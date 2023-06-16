@@ -82,7 +82,7 @@ cp -rp ${data_dir}/stims ${wrkDir}/${dirToRun}/
 # set sandbox array parameters in score_sandbox and volt_sandbox
 # to match those in input.txt
 # if num_volts is 0 and num_nodes is 10 will split all stims between 10 nodes 
-python modifySandboxArray.py $num_volts $num_nodes
+python python_scripts/modifySandboxArray.py $num_volts $num_nodes
 
 echo "step 4 done"
 
