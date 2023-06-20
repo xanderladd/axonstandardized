@@ -38,6 +38,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.target_volts = self.generate_target_volts()
     
     def generate_target_volts(self):
+        
+        if config.target_volts:
+            return config.target_volts
+        
         if not os.path.isfile('target_volts.npy'):
             target_volts = run_model.run_model(self.orig_params, config.opt_stim_names)
             np.save('target_volts.npy', target_volts)

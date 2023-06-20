@@ -1,5 +1,7 @@
 #!/bin/bash
 echo `pwd`
+module load cray-hdf5/1.12.2.3
+
 source ./input.txt
 input="input.txt"
 while IFS= read -r line
@@ -74,6 +76,7 @@ if [ ${makeParams} == ${true} ]
 
 cp -rp ${data_dir}/params ${wrkDir}/${dirToRun}/
 cp -rp ${data_dir}/stims ${wrkDir}/${dirToRun}/
+cp -rp ${data_dir}/target_volts ${wrkDir}/${dirToRun}/
 
   
 # set sandbox array parameters in score_sandbox and volt_sandbox
@@ -104,7 +107,7 @@ if [ ${wait4volts} == ${true} ] # if we're making volts, check we've made em all
     #waits until slurm has put enough volts in directory
 
     shopt -s nullglob
-    STIMFILE="stims/${stim_file}.hdf5"
+    STIMFILE="${data_dir}/stims/${stim_file}.hdf5"
     VOLT_PREFIX="runs/${model}_${peeling}_${runDate}_${custom}/volts"
     h5dump --header $STIMFILE | head -n $(expr 2 + ${num_volts} \* 4) | while read line; do
         if [[ "$line" == *"DATASET"* ]]; then
@@ -129,7 +132,7 @@ mv slurm* runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
 
 if [ ${makeScores} == ${true} ]
   then
-    sbatch score_volts_efficent_sandbox/sbatch_score.slr
+    sbatch score_volts_sandbox/sbatch_score.slr
   fi
 
 
@@ -141,7 +144,7 @@ if [ ${wait4scores} == ${true} ] # if making scores, check we made em
 
     shopt -s nullglob
 
-    STIMFILE="stims/${stim_file}.hdf5"
+    STIMFILE="${data_dir}/stims/${stim_file}.hdf5"
     VOLT_PREFIX="runs/${model}_${peeling}_${runDate}_${custom}/scores"
     h5dump --header $STIMFILE | head -n $(expr 2 + ${num_volts} \* 4) | while read line; do
         if [[ "$line" == *"DATASET"* ]]; then
@@ -171,8 +174,8 @@ cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
 dirToRun="genetic_alg/*"
 cp -p ${dirToRun} ${wrkDir}/genetic_alg/
 
-mkdir ${wrkDir}/genetic_alg/optimization_results/
-mkdir ${wrkDir}/genetic_alg/objectives/
+mkdir ${wrkDir}/genetic_alg/optimization_results
+mkdir ${wrkDir}/genetic_alg/objectives
 
 
 

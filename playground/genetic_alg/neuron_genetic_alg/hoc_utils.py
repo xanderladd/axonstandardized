@@ -62,8 +62,7 @@ def retrieve_dt(curr_stim_name, stims_hdf5, dt=None):
     if type(curr_stim_name) ==  bytes or type(curr_stim_name) ==  np.bytes_: 
         curr_stim_name = curr_stim_name.decode('ASCII')
     if not dt:
-        dt = stims_hdf5[curr_stim_name + '_dt']
-        
+        dt = stims_hdf5[curr_stim_name + '_dt'][:]        
     assert dt, "DT not specified"
     assert dt < .1, "DT is too high"
     

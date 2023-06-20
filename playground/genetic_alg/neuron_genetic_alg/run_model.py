@@ -18,14 +18,14 @@ except ImportError:
     print('could not import AllenSDK')
     
 if 'bbp' in config.model:
-    def run_model(param_set, stim_name_list, dt=None):
+    def run_model(param_set, stim_name_list, input_dt=None):
         h.load_file(config.run_file)
         volts_list = []
         stims = h5py.File(config.stims_path, 'r')
         for curr_stim_name in stim_name_list:
             total_params_num = len(param_set)
             curr_stim = stims[curr_stim_name][:]
-            dt = retrieve_dt(curr_stim_name, stims, dt=dt)
+            dt = retrieve_dt(curr_stim_name, stims, dt=input_dt)
             timestamps = np.array([dt for i in range(config.ntimestep)])
             h.curr_stim = h.Vector().from_python(curr_stim)
             h.transvec = h.Vector(total_params_num, 1).from_python(param_set)
