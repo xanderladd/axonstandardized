@@ -29,13 +29,14 @@ assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_ful
 model = inputs['model']
 peeling = inputs['peeling']
 user = inputs['user']
+data_dir = inputs['data_dir']
 params_opt_ind = [int(p)-1 for p in inputs['params'].split(",")]
 date = inputs['runDate']
 usePrev = inputs['usePrevParams']
 model_num = inputs['modelNum']
 passive = eval(inputs['passive'])
 orig_name = "orig_" + peeling
-orig_params = h5py.File('../params/params_' + model + '_' + peeling + '.hdf5', 'r')[orig_name][0]
+orig_params = h5py.File('../../params/params_' + model + '_' + peeling + '.hdf5', 'r')[orig_name][0]
 
 if 'dt' in inputs and inputs['dt'] != 'null':
     dt = float(inputs['dt'])
@@ -55,9 +56,9 @@ else:
 
 
 if usePrev == "True":
-    params_csv = '../params/params_' + model + '_' + peeling + '_prev.csv'
+    params_csv = '../../params/params_' + model + '_' + peeling + '_prev.csv'
 else:
-    params_csv = '../params/params_' + model + '_' + peeling + '.csv'
+    params_csv = '../../params/params_' + model + '_' + peeling + '.csv'
 
 if model == 'bbp':
     neuron_path = './neuron_files/bbp/'
@@ -93,7 +94,6 @@ else:
 
 if not passive:
     objectives_file = h5py.File('../objectives/multi_stim_without_sensitivity_' + model + '_' + peeling + "_" + date + '_stims.hdf5', 'r')
-    objectives_file = h5py.File('../objectives/multi_stim_without_sensitivity_bbp_full_11_27_22_stims.hdf5','r')
     score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
     weights = objectives_file['opt_weight_list'][:]
     opt_stim_names = objectives_file['opt_stim_name_list'][:]
@@ -101,9 +101,14 @@ if not passive:
     stim_file = h5py.File(stims_path, 'r')
     assert len(opt_stim_names) == (len(weights) /  len(score_function_ordered_list)), "Score function weights and stims are mismatched"
     print(opt_stim_names, "STIMS IN USE")
-    
-    target_volts_path = '../../target_volts/target_volts_{}.hdf5'.format(inputs['modelNum'])
-    
+    target_volts_path = '../../target_volts/allen_data_target_volts_{}.hdf5'.format(inputs['modelNum'])
+    if os.path.isfile(target_volts_path):
+        print('found allen target volts')
+        target_volts = h5py.File(target_volts_path,'r')
+        target_volts = [target_volts[elem][:] for elem in opt_stim_names]
+    else:
+        target_volts = None
+        
         
     ap_tune_stim_name = '18'
 else:
