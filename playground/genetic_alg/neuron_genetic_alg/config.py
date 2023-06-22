@@ -86,9 +86,9 @@ scores_path = '../../scores/'
 
 # constant to scale passsive scores by
 if passive:
-    PASSIVE_SCALAR = 1
+    PASSIVE_PERCTENAGE  = 1
 else:
-    PASSIVE_SCALAR = .05 # was 2
+    PASSIVE_PERCTENAGE = .5 # was 2
 
 
 
@@ -137,3 +137,6 @@ for stim_name in opt_stim_names:
     with open(os.path.join(scores_path,'normalizers', stim_name.decode('ASCII'))+ \
               '_normalizers.pkl','rb') as f:
         normalizers[stim_name] = pickle.load(f)
+        
+        
+starting_pop_hack = os.path.join(data_dir, 'populations', 'starting_pop.pkl')

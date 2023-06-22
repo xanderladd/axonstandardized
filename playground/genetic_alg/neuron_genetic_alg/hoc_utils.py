@@ -35,10 +35,7 @@ def decode_list(stim_name_list):
     return res
     
 def score_passive(target_volt, data_volt):
-    psv_score = config.PASSIVE_SCALAR * \
-                len(config.score_function_ordered_list) * \
-                passive_chisq(curr_target_volt, curr_data_volt)
-    return psv_score
+    return passive_chisq(target_volt, data_volt)
 
 def eval_function(target, data, function, dt):
     if function in config.custom_score_functions:
@@ -62,7 +59,8 @@ def retrieve_dt(curr_stim_name, stims_hdf5, dt=None):
     if type(curr_stim_name) ==  bytes or type(curr_stim_name) ==  np.bytes_: 
         curr_stim_name = curr_stim_name.decode('ASCII')
     if not dt:
-        dt = stims_hdf5[curr_stim_name + '_dt'][:]        
+        dt = stims_hdf5[curr_stim_name + '_dt'][:]
+
     assert dt, "DT not specified"
     assert dt < .1, "DT is too high"
     
@@ -82,7 +80,7 @@ def evaluate_score_function(stim_names, target_volts, data_volts, weights, dt=No
         
         # HANDLE PASSIVE STIM
         if np.max(curr_target_volt) < 0:
-            psv_scores += score_passive(target_volt, data_volt)
+            psv_scores += score_passive(curr_target_volt, curr_data_volt)
             # continue since active evalaution is not needed
             continue
             
@@ -98,8 +96,14 @@ def evaluate_score_function(stim_names, target_volts, data_volts, weights, dt=No
                 norm_score = normalize_score(curr_score, stim_name, curr_sf)
             
             actv_scores += norm_score * curr_weight
-            
-    total_score = psv_scores + actv_scores
+        
+    if psv_scores:
+        psv_scaler = actv_scores / psv_scores * config.PASSIVE_PERCTENAGE
+    else:
+        print("WARNING: no passive stims selected")
+        psv_scaler = 1
+        
+    total_score = psv_scores * psv_scaler + actv_scores
     # print('ACTIVE :', actv_scores, "PASV:", psv_scores)
     return total_score
 

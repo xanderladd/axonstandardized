@@ -17,6 +17,7 @@ from mpi4py import MPI
 import random
 import shutil
 import logging
+import config
 
 logger = logging.getLogger()
 old_update = bpop.deapext.utils.update_history_and_hof 
@@ -158,10 +159,10 @@ def my_ea(
     else:
         # Start a new evolution
         start_gen = 1
-        print("NOT ******** setting start pop hack to false")
-        starting_pop_hack = 'starting_pop.pkl' #alse
-        starting_pop_hack  = False
+        
+        starting_pop_hack = config.starting_pop_hack 
         if starting_pop_hack and global_rank == 0:
+            print('starting pop from : ', starting_pop_hack)
             with open(starting_pop_hack,'rb') as f: data = pickle.load(f)
             population = data['population']
          
