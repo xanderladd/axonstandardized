@@ -55,6 +55,7 @@ proportionToTrain = 0.7
 # If k = 1, then use the top stim only.
 #TODO: change k back to 20
 k = 20
+k = 8
 print("K IS : ", k)
 # random seed to use for train/validation on optimization
 seed = 500
