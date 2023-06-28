@@ -24,6 +24,14 @@ mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'stims'
 
 
 
+if [ ${ingestCell} == ${true} ]
+  then
+    cd param_stim_generator/allen_generator
+    python cell_ingest.py --cell_id ${modelNum}
+    python exp_data_sample.py --cell_id ${modelNum}
+    cd ../../
+fi
+
 if [ ${makeStims} == ${true} ]
   then
     cd param_stim_generator/allen_generator
@@ -166,6 +174,7 @@ fi
 
 #move slurm into runs
 mv slurm* runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
+
 mkdir ${wrkDir}/genetic_alg
 dirToRun="genetic_alg/neuron_genetic_alg"
 cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
@@ -177,12 +186,16 @@ cp -p ${dirToRun} ${wrkDir}/genetic_alg/
 mkdir ${wrkDir}/genetic_alg/optimization_results
 mkdir ${wrkDir}/genetic_alg/objectives
 
+cp -r analyze_p_bbp_full ${wrkDir}
+
+currDir=`pwd`
 
 
 if [ ${makeOpt} == ${true} ]
   then
+    cd ${wrkDir}
     sbatch analyze_p_bbp_full/analyze_p.slr
-  
+    cd ${currDir}
 
     echo waiting on optimzation...
     shopt -s nullglob
@@ -198,38 +211,32 @@ if [ ${makeOpt} == ${true} ]
 
 if [ ${makeObj} == ${true} ]
   then
+    cd ${wrkDir}
     python analyze_p_bbp_full/analyze_p_multistims.py --model ${model} --peeling ${peeling} \
     --CURRENTDATE ${runDate} --custom ${custom}
+    cd ${currDir}
+
   fi
 
-# shopt -s nullglob
-# found=0
-# target_files=1
-# wrkDir=runs/${model}_${peeling}_${runDate}_${custom}
-# while [ $found -ne $target_files ]
-# do
-#         found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
-# done
-# echo finished creating objectives file
-# shopt -u nullglob
+shopt -s nullglob
+found=0
+target_files=1
+wrkDir=runs/${model}_${peeling}_${runDate}_${custom}
+while [ $found -ne $target_files ]
+do
+        found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
+done
+echo finished creating objectives file
+shopt -u nullglob
 
-wrkDir=runs/${model}_${peeling}_${runDate}_${custom}/genetic_alg
-cp -r params $wrkDir/
-cp param_stim_generator/params_reference/* $wrkDir/params/
+ga_dir=runs/${model}_${peeling}_${runDate}_${custom}/genetic_alg
 
 
 
-
-if [ ${gaGPU} == ${true} ]
-    then
-        module purge
-        module load cgpu
-        sbatch ${wrkDir}/GPU_genetic_alg/BigGaGPU.slr
-fi
 
 if [ ${runGA} == ${true} ]
   then
-    sbatch ${wrkDir}/neuron_genetic_alg/runGA.slr
+    sbatch ${ga_dir}/neuron_genetic_alg/runGA.slr
   fi
 
 

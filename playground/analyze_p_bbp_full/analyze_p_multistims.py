@@ -15,7 +15,7 @@ import ipywidgets as widgets
 #from IPython.display import clear_output
 import csv
 import h5py
-
+import config
 
 parser = argparse.ArgumentParser(description='Analyze P Parllel')
 parser.add_argument('--model', type=str, required=True, help='specifies model for AnalyzeP')
@@ -29,8 +29,11 @@ peeling = args.peeling
 currentdate = args.CURRENTDATE
 custom = args.custom
 
+
 # Data Files
-if custom is not None:
+if 'runs' in os.getcwd():
+    wrkDir = os.getcwd()
+elif custom is not None:
     wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + '_' + custom
 else:
     wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
@@ -55,7 +58,7 @@ proportionToTrain = 0.7
 # If k = 1, then use the top stim only.
 #TODO: change k back to 20
 k = 20
-k = 8
+k = 12
 print("K IS : ", k)
 # random seed to use for train/validation on optimization
 seed = 500
@@ -86,7 +89,6 @@ time.sleep(5)
 from new_AnalyzeP import *
 
 ordered_stim_list, ordered_score_function_list, pin_score_dict = main()
-
 
 # Fixes a shuffled order.
 # Applies the same shuffled order on fed data.
@@ -239,7 +241,11 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
 
 stimsInOrder = [e.decode('ascii') for e in opt_file['stims_optimal_order'][:]]
 
-
+if len(config.opt_stims):
+    print('manual overrride of stims')
+    stimsInOrder = config.opt_stims.split(',')
+    k = len(stimsInOrder)
+    
 weight_list, stim_list = trainAndValidateScoreOptimization(stimsInOrder[:k], True, seed=seed, saveToFile=True)
 opt_result_hdf5 = h5py.File(save_path +'/multi_stim_without_sensitivity_' + model \
 + '_' + peeling +'_'+ currentdate + '_stims.hdf5', 'w')

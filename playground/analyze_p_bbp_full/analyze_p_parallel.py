@@ -6,6 +6,7 @@ import os
 import sys
 import argparse
 from noisyopt import minimizeCompass
+import config
 np.seterr(divide='ignore', invalid='ignore')
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -22,7 +23,9 @@ currentdate = args.CURRENTDATE
 custom = args.custom
 
 
-if custom is not None:
+if 'runs' in os.getcwd():
+    wrkDir = os.getcwd()
+elif custom is not None:
     wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + '_' + custom
 else:
     wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate

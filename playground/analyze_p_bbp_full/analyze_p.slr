@@ -9,13 +9,6 @@
 
 
 
-input="input.txt"
-while IFS= read -r line
-do
-    IFS='=' read -ra inputs <<< "$line"
-    name="${inputs[0]}"
-    data="${inputs[1]}"
-done < "$input"
 true=True
 source ./input.txt
 
@@ -23,17 +16,20 @@ echo running analyze p parallel
 export OMP_NUM_THREADS=1
 srcDir=`pwd`
 
-wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}
+
+if [[ $srcDir == *"runs"* ]]; then
+    wrkDir=${srcDir}
+else
+    wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}
+fi
+
 mkdir ${wrkDir}/'genetic_alg'
-wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}/
 echo 'my wrkDir='${wrkDir}
 
 dirToRun="genetic_alg"
 mkdir ${wrkDir}/${dirToRun}
 mkdir ${wrkDir}/${dirToRun}/objectives
 mkdir ${wrkDir}/${dirToRun}/optimization_results
-#cp -rp ${dirToRun} ${wrkDir}
-#sleep 200
 
 
 
