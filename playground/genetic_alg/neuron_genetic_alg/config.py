@@ -38,6 +38,38 @@ passive = eval(inputs['passive'])
 orig_name = "orig_" + peeling
 orig_params = h5py.File('../../params/params_' + model + '_' + peeling + '.hdf5', 'r')[orig_name][0]
 
+
+if 'log_transform_params' in inputs:
+    log_transform_params = bool(inputs['log_transform_params'])
+else:
+    log_transform_params = False
+if usePrev == "True":
+    params_csv = '../../params/params_' + model + '_' + peeling + '_prev.csv'
+else:
+    params_csv = '../../params/params_' + model + '_' + peeling + '.csv'
+base_thresh = 50
+
+
+if 'added_stims' in inputs:
+    added_stims = [elem.encode('ASCII') for elem in inputs['added_stims'].split(',')]
+else:
+    added_stims = []
+
+starting_pop_hack = os.path.join(data_dir, 'populations', 'starting_pop.pkl')
+
+if log_transform_params and starting_pop_hack:
+    starting_pop_hack = None
+print('log_transform_params: ', log_transform_params)
+print('starting_pop_hack: ', starting_pop_hack)
+# starting_pop_hack = None
+passive_scaler = 0
+# constant to scale passsive scores by
+if passive:
+    PASSIVE_PERCTENAGE  = 1
+else:
+    PASSIVE_PERCTENAGE = 1 # was 2
+
+
 if 'dt' in inputs and inputs['dt'] != 'null':
     dt = float(inputs['dt'])
 else:
@@ -47,18 +79,6 @@ if 'timesteps' in inputs and inputs['timesteps'] != 'null':
     ntimestep = int(inputs['timesteps'])
 else:
     ntimestep = 10000
-     
-if 'log_transform_params' in inputs:
-    log_transform_params = bool(inputs['log_transform_params'])
-else:
-    log_transform_params = False
-     
-
-
-if usePrev == "True":
-    params_csv = '../../params/params_' + model + '_' + peeling + '_prev.csv'
-else:
-    params_csv = '../../params/params_' + model + '_' + peeling + '.csv'
 
 if model == 'bbp':
     neuron_path = './neuron_files/bbp/'
@@ -84,11 +104,6 @@ scores_path = '../../scores/'
 
 
 
-# constant to scale passsive scores by
-if passive:
-    PASSIVE_PERCTENAGE  = 1
-else:
-    PASSIVE_PERCTENAGE = .5 # was 2
 
 
 
@@ -100,12 +115,15 @@ if not passive:
     stims_path = '../../stims/' + inputs['stim_file'] + '.hdf5'
     stim_file = h5py.File(stims_path, 'r')
     assert len(opt_stim_names) == (len(weights) /  len(score_function_ordered_list)), "Score function weights and stims are mismatched"
+    
+    # BESPOKE
+    opt_stim_names = np.append(opt_stim_names, added_stims)
     print(opt_stim_names, "STIMS IN USE")
     target_volts_path = '../../target_volts/allen_data_target_volts_{}.hdf5'.format(inputs['modelNum'])
     if os.path.isfile(target_volts_path):
         print('found allen target volts')
         target_volts = h5py.File(target_volts_path,'r')
-        target_volts = [target_volts[elem][:] for elem in opt_stim_names]
+        target_volts = [target_volts[elem] for elem in opt_stim_names]
     else:
         target_volts = None
         
@@ -138,5 +156,4 @@ for stim_name in opt_stim_names:
               '_normalizers.pkl','rb') as f:
         normalizers[stim_name] = pickle.load(f)
         
-        
-starting_pop_hack = os.path.join(data_dir, 'populations', 'starting_pop.pkl')
+    

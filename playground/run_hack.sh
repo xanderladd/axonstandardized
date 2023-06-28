@@ -23,6 +23,13 @@ mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
 mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'stims'
 
 
+if [ ${ingestCell} == ${true} ]
+  then
+    cd param_stim_generator/allen_generator
+    python cell_ingest.py --cell_id ${modelNum}
+    python exp_data_sample.py --cell_id ${modelNum}
+    cd ../../
+fi
 
 if [ ${makeStims} == ${true} ]
   then
