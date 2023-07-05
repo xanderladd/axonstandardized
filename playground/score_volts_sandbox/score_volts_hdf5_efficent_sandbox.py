@@ -273,15 +273,6 @@ for k in range(len(volts_name_list)):
     pin_volts_name = 'pin_'+curr_stim_name
     #pdx_volts_name = 'pdx_'+curr_stim_name
     
-    with open("../../../../../../../d.txt", 'w') as g:
-        g.write('volts_name_list: ' + str(volts_name_list))
-        curr_volts_name = volts_name_list[0]
-        curr_stim_name = curr_volts_name.replace('_volts.hdf5', '')
-        orig_volts_name = 'orig_'+curr_stim_name
-        pin_volts_name = 'pin_'+curr_stim_name
-        g.write("\n" + config.volts_path+curr_volts_name)
-        with open(config.volts_path+curr_volts_name, 'r') as h:
-            g.write('\nsuccessful')
     if "hdf5" in curr_volts_name:
         volts = h5py.File(config.volts_path+curr_volts_name, 'r')
     else:
