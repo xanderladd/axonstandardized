@@ -16,9 +16,19 @@ parser.add_argument('--timesteps', type=int, required=True,
                     help='model number')
 
 
+input_file = open('../../input.txt', "r")
+inputs = {}
+input_lines = input_file.readlines()
+for line in input_lines:
+    vals = line.split("=")
+    if len(vals) != 2 and "\n" not in vals:
+        raise Exception("Error in line:\n" + line + "\nPlease include only one = per line.")
+    if "\n" not in vals:
+        inputs[vals[0]] = vals[1][:len(vals[1])-1]
+
 ## Definitions ##
-stims_path = '../../../../axonstandardized_data/stims/'
-target_path = '../../../../axonstandardized_data/target_volts/'
+stims_path = f'{inputs["data_dir"]}/stims/'
+target_path = f'{inputs["data_dir"]}/target_volts/'
 sweep_filter_1 = [str(e) for e in range(79, 100)]
 sweep_filter_2 = ['101', '102', '103']
 sweep_filter = sweep_filter_1 + sweep_filter_2
@@ -179,7 +189,7 @@ def downsample(stims, target_volts, matched_sweep_numbers, resolution=10000, sho
 #### MAIN FUNCTIONALITIES ##########
 
 def check_stims(model_number, timesteps):
-    f = h5py.File("../../../../axonstandardized_data/results/{}/stims_{}.hdf5".format(model_number,model_number), "r")
+    f = h5py.File(f"{inputs['data_dir']}/results/{model_number}/stims_{model_number}.hdf5", "r")
     all_keys = list(f.keys())
     sweep_keys = [key.decode('ascii') for key in f['sweep_keys'][:]]
     for key in sweep_keys:
@@ -189,7 +199,7 @@ def check_stims(model_number, timesteps):
         assert len(f[key][:]) == timesteps, "stim is wrong length:  {}".format(len(f[key][:]))
         
 def check_volts(model_number, timesteps):
-    f = h5py.File("../../../../axonstandardized_data/results/{}/target_volts_{}.hdf5".format(model_number,model_number), "r")
+    f = h5py.File(f"{inputs['data_dir']}/results/{model_number}/target_volts_{model_number}.hdf5", "r")
     for key in f.keys():
         print(f[key][0], "Start volt")
         assert len(f[key][:]) == timesteps, "Voltage is wrong length: {}".format(len(f[key][:]))
@@ -198,14 +208,14 @@ def check_volts(model_number, timesteps):
 def save_results_hdf5(model_number, stims, target_volts, dts, \
                       sweep_index_to_match, matched_sweep_numbers, \
                       sweep_map_to_original, timesteps):
-    if not os.path.isdir("../../../../axonstandardized_data/results/{}".format(model_number)):
-        os.mkdir("../../../../axonstandardized_data/results/{}".format(model_number))
-    if os.path.isfile("../../../../axonstandardized_data/results/{}/stims_{}.hdf5".format(model_number,model_number)):
-        os.remove("../../../../axonstandardized_data/results/{}/stims_{}.hdf5".format(model_number,model_number))
-    if os.path.isfile("../../../../axonstandardized_data/results/{}/target_volts_{}.hdf5".format(model_number,model_number)):
-        os.remove("../../../../axonstandardized_data/results/{}/target_volts_{}.hdf5".format(model_number,model_number))
-    stim_file = h5py.File("../../../../axonstandardized_data/results/{}/stims_{}.hdf5".format(model_number,model_number), "w")
-    target_file = h5py.File("../../../../axonstandardized_data/results/{}/target_volts_{}.hdf5".format(model_number,model_number), "w")
+    if not os.path.isdir(f"{inputs['data_dir']}/results/{model_number}"):
+        os.mkdir(f"{inputs['data_dir']}/results/{model_number}")
+    if os.path.isfile(f"{inputs['data_dir']}/results/{model_number}/stims_{model_number}.hdf5"):
+        os.remove(f"{inputs['data_dir']}/results/{model_number}/stims_{model_number}.hdf5")
+    if os.path.isfile(f"{inputs['data_dir']}/results/{model_number}/target_volts_{model_number}.hdf5"):
+        os.remove(f"{inputs['data_dir']}/results/{model_number}/target_volts_{model_number}.hdf5")
+    stim_file = h5py.File(f"{inputs['data_dir']}/results/{model_number}/stims_{model_number}.hdf5", "w")
+    target_file = h5py.File(f"{inputs['data_dir']}/results/{model_number}/target_volts_{model_number}.hdf5", "w")
     correspondance = []
     seen = []
     skipped =0
@@ -282,13 +292,13 @@ def save_stims(model_number, passive, timesteps, show=False, pdf=None, force=Fal
     all_stims = get_stims(stims_path,model_number)
     # TODO: store these files in var and delete them in case they exist
     if passive:
-        stim_path = "../../../../axonstandardized_data/results/{}/stims_{}_passive.hdf5".format(model_number,model_number)
-        volt_path = "../../../../axonstandardized_data/results/{}/target_volts_{}_passive.hdf5".format(model_number,model_number)
-        obj_path = "../../../../axonstandardized_data/results/{}/allen{}_objectives_passive.hdf5".format(model_number,model_number)
+        stim_path = f"{inputs['data_dir']}/results/{model_number}/stims_{model_number}_passive.hdf5"
+        volt_path = f"{inputs['data_dir']}/results/{model_number}/target_volts_{model_number}_passive.hdf5"
+        obj_path = f"{inputs['data_dir']}/results/{model_number}/allen{model_number}_objectives_passive.hdf5"
     else:
-        stim_path = "../../../../axonstandardized_data/results/{}/stims_{}.hdf5".format(model_number,model_number)
-        volt_path = "../../../../axonstandardized_data/results/{}/target_volts_{}.hdf5".format(model_number,model_number)
-        obj_path = "../../../../axonstandardized_data/results/{}/allen{}_objectives.hdf5".format(model_number,model_number)
+        stim_path = f"{inputs['data_dir']}/results/{model_number}/stims_{model_number}.hdf5"
+        volt_path = f"{inputs['data_dir']}/results/{model_number}/target_volts_{model_number}.hdf5"
+        obj_path = f"{inputs['data_dir']}/results/{model_number}/allen{model_number}_objectives.hdf5"
         
     e1, e2, e3 = check_and_remove_fn(stim_path, force), check_and_remove_fn(volt_path, force), check_and_remove_fn(obj_path, force)
     
@@ -386,12 +396,12 @@ def save_stims(model_number, passive, timesteps, show=False, pdf=None, force=Fal
 if __name__ == "__main__":
     pdf = None
     args = parser.parse_args()
-    os.makedirs(os.path.join('../../../../axonstandardized_data/results', str(args.model)), exist_ok=True)
+    os.makedirs(os.path.join(f'{inputs["data_dir"]}/results', str(args.model)), exist_ok=True)
     if args.pdf:
         if args.passive:
-            pdf = PdfPages(os.path.join('../../../../axonstandardized_data/results', str(args.model), 'passive_stims.pdf'))
+            pdf = PdfPages(os.path.join(f'{inputs["data_dir"]}/results', str(args.model), 'passive_stims.pdf'))
         else:
-            pdf = PdfPages(os.path.join('../../../../axonstandardized_data/results', str(args.model), 'full_stims.pdf'))
+            pdf = PdfPages(os.path.join(f'{inputs["data_dir"]}/results', str(args.model), 'full_stims.pdf'))
 
     save_stims(args.model, passive=args.passive, timesteps=args.timesteps, force=args.force, show=True, pdf=pdf)
     
