@@ -6,9 +6,7 @@ import h5py
 import os
 import efel
 import pickle as pkl
-os.chdir('neuron_genetic_alg')
-from config import *
-os.chdir('../')
+import cfg
 
 rank = int(os.environ['SLURM_PROCID'])
 all_features = efel.api.getFeatureNames()
@@ -16,7 +14,7 @@ np.set_printoptions(threshold=sys.maxsize)
 plt.rcParams['agg.path.chunksize'] = 10000
 
 
-parsed_stim_response_path = f'./allen_model_sota_model_parsed_cell_{model_num}.hdf5'
+parsed_stim_response_path = f'./allen_model_sota_model_parsed_cell_{cfg.model_num}.hdf5'
 data_file = h5py.File(parsed_stim_response_path, 'r')
 sweep_keys = [e.decode('ascii') for e in data_file['sweep_keys']]
 
@@ -100,12 +98,25 @@ except:
 if int(sweep_key) > 78:
     exit()
 
-
+def adjust_v_init_failure(response, target_reponse):
+    diff = response[0] - target_reponse[0]
+    return response - diff
+    
 print(f"processing {sweep_key} sweep for {len(all_features)}")
 stim_val = data_file[sweep_key+'_stimulus'][:]
 cell_response = data_file[sweep_key+'_cell_response'][:]
 allen_response = data_file[sweep_key+'_allen_model_response'][:]
+
+if len(np.unique(allen_response)) == 1:
+    with open('failed_allen_stims.txt','a+') as f:
+        f.write('failed ' + str(sweep_key))
+    exit()
+    
 compare_response = data_file[sweep_key+'_compare_model_response'][:]
+
+compare_response = adjust_v_init_failure(compare_response, cell_response)
+allen_response = adjust_v_init_failure(allen_response, cell_response)
+
 dt_val = data_file[sweep_key+'_dt'][0]
 #plot_sampled(sweep_key, stim_val, cell_response, allen_response, compare_response)
 efel_feature_dict = {}

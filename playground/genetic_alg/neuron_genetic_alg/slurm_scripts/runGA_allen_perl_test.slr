@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --qos=regular
-#SBATCH --time=12:00:00
-#SBATCH --nodes=10
+#SBATCH --qos=debug
+#SBATCH --time=00:10:00
+#SBATCH --nodes=1
 #SBATCH --constraint=cpu
 
 
@@ -14,18 +14,19 @@ echo for ${MAX_NGEN} generations
 
 
 seed=$((10000 + $RANDOM % 100000))
-export BLUEPYOPT_SEED=${seed}
+
+#seed=1132 # not used
+
 
 
 echo seed: ${seed}
 export OMP_NUM_THREADS=1
 
-srun -n 2500 python optimize_parameters_genetic_alg.py \
+python optimize_parameters_genetic_alg.py \
     -vv                                \
     --compile                          \
-    --offspring_size=10000              \
-    --max_ngen=500                   \
+    --offspring_size=1              \
+    --max_ngen=2                   \
     --seed=${seed}                     \
-    --checkpoint ckpts/${seed}_ckpt      \
-    --start  > GA_out${seed}.log  
-    
+    --checkpoint ${seed}_ckpt      \
+    --start  > GA_out_${seed}.log  

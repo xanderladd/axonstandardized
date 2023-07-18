@@ -119,7 +119,7 @@ if not passive:
     # BESPOKE
     opt_stim_names = np.append(opt_stim_names, added_stims)
     print(opt_stim_names, "STIMS IN USE")
-    target_volts_path = '../../target_volts/allen_data_target_volts_{}.hdf5'.format(inputs['modelNum'])
+    target_volts_path = '../../target_volts/target_volts_{}.hdf5'.format(inputs['modelNum'])
     if os.path.isfile(target_volts_path):
         print('found allen target volts')
         target_volts = h5py.File(target_volts_path,'r')
