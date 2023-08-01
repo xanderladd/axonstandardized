@@ -22,7 +22,7 @@ assert 'user' in inputs, "No user specified"
 assert 'model' in inputs, "No model specificed"
 assert 'peeling' in inputs, "No peeling specificed"
 assert 'seed' in inputs, "No seed specificed"
-assert inputs['model'] in ['allen', 'mainen', 'bbp', 'compare_bbp'], "Model must be from: \'allen\' \'mainen\', \'bbp\'. Do not include quotes."
+assert inputs['model'] in ['allen', 'mainen', 'bbp', 'compare_bbp', 'M1_TTPC_NA_HH'], "Model must be from: \'allen\' \'mainen\', \'bbp\'. Do not include quotes."
 assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."
 assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_full?"
 
@@ -90,6 +90,10 @@ elif model == "allen":
     hoc_files = ["stdgui.hoc", "import3d.hoc", "/global/cscratch1/sd/zladd/axonstandardized/playground/runs/allen_full_09_12_22_487664663_base5/genetic_alg/neuron_genetic_alg/cell.hoc"]
     compiled_mod_library = "/global/cscratch1/sd/zladd/axonstandardized/playground/runs/allen_full_09_12_22_487664663_base5/genetic_alg/neuron_genetic_alg/x86_64/.libs/libnrnmech.so"
     args = {'manifest_file': '/global/cscratch1/sd/zladd/axonstandardized/playground/runs/allen_full_09_12_22_487664663_base5/genetic_alg/neuron_genetic_alg/manifest.json','axon_type': 'truncated'}
+elif model == 'M1_TTPC_NA_HH':
+    neuron_path = 'neuron_files/M1_TTPC_NA_HH'
+    run_file = None
+
 
 
 custom_score_functions = [

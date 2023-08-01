@@ -5,6 +5,8 @@ import config
 os.chdir(config.neuron_path) 
 from neuron import h
 os.chdir("../../")
+from NeuronModelClass import NeuronModel
+
 
 import h5py
 
@@ -35,6 +37,24 @@ if 'bbp' in config.model:
             out = h.vecOut.to_python()        
             volts_list.append(out)
         return np.array(volts_list)
+    
+    # Running a single volt
+    def run_model_stim(param_set, stim_data, dt, mod_dir=''):
+        print('running volts')
+        run_file = 'neuron_genetic_alg/neuron_files/compare_bbp/run_model_cori.hoc'
+        h.load_file(run_file)
+
+        total_params_num = len(param_set)
+        ntimestep = len(stim_data)
+        timestamps = np.array([dt for i in range(ntimestep)])
+        h.curr_stim = h.Vector().from_python(stim_data)
+        h.transvec = h.Vector(total_params_num, 1).from_python(param_set)
+        h.stimtime = h.Matrix(1, len(timestamps)).from_vector(h.Vector().from_python(timestamps))
+        h.ntimestep = ntimestep
+        h.runStim()
+        out = h.vecOut.to_python()
+        return np.array(out)
+    
 elif config.model == 'allen':
     def run_allen_model(param_set, stim_name_list):
         description = runner.load_description(args)
@@ -74,7 +94,30 @@ elif config.model == 'allen':
             responses.append(res['v'] )
 
         return responses
-
+elif config.model == 'M1_TTPC_NA_HH':
+    def run_model(param_set, stim_name_list, dt):
+        model = NeuronModel(mod_dir = './neuron_files/M1_TTPC_NA_HH/')
+        model.update_params(param_set)
+        volts_list = []
+        stims = h5py.File(config.stims_path, 'r')
+        
+        if type(stim_name_list) != list and type(stim_name_list) != np.ndarray:
+            stim_name_list = [stim_name_list]
+            
+        for curr_stim_name in stim_name_list:
+            stim = stims[curr_stim_name][:]
+            curr_dt = retrieve_dt(curr_stim_name, stims, dt=dt)
+            Vm, I, t, stim = model.run_model_compare(stim, dt=curr_dt)
+            volts_list.append(Vm)
+        return np.array(volts_list)
+    
+    def run_model_stim(param_set, stim, dt, mod_dir='./neuron_files/M1_TTPC_NA_HH/'):
+        model = NeuronModel(mod_dir = mod_dir )
+        model.update_params(param_set)
+        volts_list = []
+        Vm, I, t, stim = model.run_model_compare(stim, dt=dt)
+        volts_list.append(Vm)
+        return np.array(volts_list)
 
 
 
