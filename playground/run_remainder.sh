@@ -39,7 +39,10 @@ if [ ${wait4volts} == ${true} ] # if we're making volts, check we've made em all
             if [[ $fileName == *"types"* ]]; then
               continue
             fi
-            while [ ! -f "${fileName}" ]; do sleep 1; done
+            while [ ! -f "${fileName}" ]; do 
+            sleep 1;
+            # echo "looking for ${fileName}"
+            done
             echo found "${fileName}"
         fi
     done
@@ -74,9 +77,12 @@ if [ ${wait4scores} == ${true} ] # if making scores, check we made em
             if [[ $fileName == *"dt"* ]]; then
               continue
             fi
+            if [[ $fileName == *"types"* ]]; then
+              continue
+            fi
             while [ ! -f "${fileName}" ]; do 
                 sleep 5; 
-                # echo looking fr "${fileName}"
+                echo looking fr "${fileName}"
             done
             echo found "${fileName}"
         fi
@@ -85,13 +91,13 @@ if [ ${wait4scores} == ${true} ] # if making scores, check we made em
 fi
 
 #move slurm into runs
-mv slurm* runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
-
+mv slurm* 'slurm'
+wrkDir=`pwd`
 mkdir ${wrkDir}/genetic_alg
 dirToRun="genetic_alg/neuron_genetic_alg"
-cp -rp ../${dirToRun} ${wrkDir}/genetic_alg/
+cp -rp ../../${dirToRun} ${wrkDir}/genetic_alg/
 dirToRun="genetic_alg/*"
-cp -p ../${dirToRun} ${wrkDir}/genetic_alg/
+cp -p ../../${dirToRun} ${wrkDir}/genetic_alg/
 
 mkdir ${wrkDir}/genetic_alg/optimization_results
 mkdir ${wrkDir}/genetic_alg/objectives
@@ -147,8 +153,19 @@ ga_dir=genetic_alg
 
 if [ ${runGA} == ${true} ]
   then
-    sbatch ${ga_dir}/neuron_genetic_alg/runGA.slr
+    cd ${ga_dir}/neuron_genetic_alg/slurm_scripts
+    sbatch runGA_allen_perl.slr
+    cd -
   fi
+  
+if [ ${comapre2allen} == ${true} ]
+  then
+    cd ${ga_dir}
+    sbatch compare2allen.slr
+    cd -
+  fi
+
+
 
 
 echo DONE

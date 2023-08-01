@@ -205,8 +205,8 @@ mv slurm* runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
 mkdir ${wrkDir}/genetic_alg
 dirToRun="genetic_alg/neuron_genetic_alg"
 cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
-dirToRun="genetic_alg/GPU_genetic_alg"
-cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
+# dirToRun="genetic_alg/GPU_genetic_alg"
+# cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
 dirToRun="genetic_alg/*"
 cp -p ${dirToRun} ${wrkDir}/genetic_alg/
 
