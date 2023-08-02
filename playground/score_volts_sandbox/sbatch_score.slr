@@ -5,7 +5,7 @@
 #SBATCH --constraint=cpu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m2043
-#SBATCH --array 1-150%40
+#SBATCH --array 1-120%40
 
 # change array 1-n, where n is the number of stims
 

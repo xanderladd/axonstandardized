@@ -14,7 +14,17 @@ args = parser.parse_args()
 
 cell_id = args.cell_id 
 
-file_name = f'../../../../axonstandardized_data/nwb_files/{cell_id}.nwb'
+input_file = open('../../input.txt', "r")
+inputs = {}
+input_lines = input_file.readlines()
+for line in input_lines:
+    vals = line.split("=")
+    if len(vals) != 2 and "\n" not in vals:
+        raise Exception("Error in line:\n" + line + "\nPlease include only one = per line.")
+    if "\n" not in vals:
+        inputs[vals[0]] = vals[1][:len(vals[1])-1]
+
+file_name = f'{inputs["data_dir"]}/nwb_files/{cell_id}.nwb'
 data_set = NwbDataSet(file_name)
 
 sweep_numbers = sorted(data_set.get_experiment_sweep_numbers())
@@ -126,10 +136,10 @@ full_noise_ind = [initial_ind, 4400000]
 sq_0_5_ind = [initial_ind, 450000]
 sq_2_ind = [130000, 700000]
 
-os.makedirs('../../../../axonstandardized_data/stims', exist_ok=True)
-os.makedirs('../../../../axonstandardized_data/target_volts', exist_ok=True)
-stim_file_path = f'../../../../axonstandardized_data/stims/allen_data_stims_{cell_id}.hdf5'
-volts_file_path = f'../../../../axonstandardized_data/target_volts/allen_data_target_volts_{cell_id}.hdf5'
+os.makedirs(f'{inputs["data_dir"]}/stims', exist_ok=True)
+os.makedirs(f'{inputs["data_dir"]}/target_volts', exist_ok=True)
+stim_file_path = f'{inputs["data_dir"]}/stims/allen_data_stims_{cell_id}.hdf5'
+volts_file_path = f'{inputs["data_dir"]}/target_volts/allen_data_target_volts_{cell_id}.hdf5'
 
 def sample(orig_list, final_len, is_stim, sampling_rate):
     rate = int(len(orig_list)/final_len)

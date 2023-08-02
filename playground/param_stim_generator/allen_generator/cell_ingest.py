@@ -11,6 +11,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--cell_id', type=int, required=True)
 args = parser.parse_args()
 
+input_file = open('../../input.txt', "r")
+inputs = {}
+input_lines = input_file.readlines()
+for line in input_lines:
+    vals = line.split("=")
+    if len(vals) != 2 and "\n" not in vals:
+        raise Exception("Error in line:\n" + line + "\nPlease include only one = per line.")
+    if "\n" not in vals:
+        inputs[vals[0]] = vals[1][:len(vals[1])-1]
 
 # Code start
 biophysical_api = lib_biophysical_api.BiophysicalApi()
@@ -32,12 +41,12 @@ selection_criteria = (cell_df['donor__species'] == 'Mus musculus') & \
 cell_id = args.cell_id 
 
 # NOTE: saves data to file
-os.makedirs('../../../../axonstandardized_data/nwb_files', exist_ok=True)
-cell_api.save_ephys_data(cell_id, f"../../../../axonstandardized_data/nwb_files/{cell_id}.nwb")
+os.makedirs(f'{inputs["data_dir"]}/nwb_files', exist_ok=True)
+cell_api.save_ephys_data(cell_id, f"{inputs['data_dir']}/nwb_files/{cell_id}.nwb")
 
 # read NWB file that we just downloaded
-os.makedirs('../../../../axonstandardized_data/nwb_files', exist_ok=True)
-cell_data = NwbDataSet(f"../../../../axonstandardized_data/nwb_files/{cell_id}.nwb")
+os.makedirs(f'{inputs["data_dir"]}/nwb_files', exist_ok=True)
+cell_data = NwbDataSet(f"{inputs['data_dir']}/nwb_files/{cell_id}.nwb")
 
 sweeps = cell_data.get_sweep_numbers()
 sweep = np.random.choice(sweeps)

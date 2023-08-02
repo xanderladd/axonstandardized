@@ -1,5 +1,6 @@
 #!/bin/bash
 echo `pwd`
+module load cray-hdf5/1.12.2.3
 source ./input.txt
 input="input.txt"
 while IFS= read -r line
@@ -16,10 +17,11 @@ mkdir -p runs
 mkdir -p runs/${model}_${peeling}_${runDate}_${custom}
 wrkDir=runs/${model}_${peeling}_${runDate}_${custom}
 cp input.txt ${wrkDir}/
-mkdir -p ${wrkDir}/volts
-mkdir -p ${wrkDir}/scores
-mkdir -p ${wrkDir}/stims
-mkdir -p ${wrkDir}/objectives
+mkdir -p ${wrkDir}/'volts'	
+mkdir -p ${wrkDir}/'scores'	
+mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'slurm'	
+mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'stims'
+
 
 if [ ${ingestCell} == ${true} ]
   then
@@ -81,8 +83,9 @@ if [ ${makeParams} == ${true} ]
   fi
   
  
-cp -rp ${data_dir}/params ${wrkDir}/${dirToRun}/
-cp -rp ${data_dir}/stims ${wrkDir}/${dirToRun}/
+cp -rp ${data_dir}/params/ ${wrkDir}/${dirToRun}/
+cp -rp ${data_dir}/stims/ ${wrkDir}/${dirToRun}/
+cp -rp ${data_dir}/target_volts/ ${wrkDir}/${dirToRun}/
 
 #source ~/neuron-setup.ext
 
@@ -117,7 +120,7 @@ if [ ${wait4volts} == ${true} ] # if we're making volts, check we've made em all
     #waits until slurm has put enough volts in directory
 
     shopt -s nullglob
-    STIMFILE="../../axonstandardized_data/stims/${stim_file}.hdf5"
+    STIMFILE="${data_dir}/stims/${stim_file}.hdf5"
     VOLT_PREFIX="runs/${model}_${peeling}_${runDate}_${custom}/volts"
     h5dump --header $STIMFILE | head -n $(expr 2 + ${num_volts} \* 4) | while read line; do
         if [[ "$line" == *"DATASET"* ]]; then
@@ -157,7 +160,7 @@ if [ ${wait4scores} == ${true} ] # if making scores, check we made em
 
     shopt -s nullglob
 
-    STIMFILE="../../axonstandardized_data/stims/${stim_file}.hdf5"
+    STIMFILE="${data_dir}/stims/${stim_file}.hdf5"
     VOLT_PREFIX="runs/${model}_${peeling}_${runDate}_${custom}/scores"
     h5dump --header $STIMFILE | head -n $(expr 2 + ${num_volts} \* 4) | while read line; do
         if [[ "$line" == *"DATASET"* ]]; then

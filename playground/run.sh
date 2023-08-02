@@ -19,6 +19,7 @@ wrkDir=runs/${model}_${peeling}_${runDate}_${custom}
 cp input.txt ${wrkDir}/
 mkdir -p ${wrkDir}/'volts'
 mkdir -p ${wrkDir}/'scores'
+mkdir -p ${wrkDir}/'objectives'
 mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
 mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'stims'
 
@@ -67,7 +68,7 @@ echo "stims / target volts made"
 
 
 # move them up
-# sh param_stim_generator/allen_generator/move_files.sh ${modelNum} ${passive} runs/${model}_${peeling}_${runDate}_${custom}/
+sh param_stim_generator/allen_generator/move_files.sh ${modelNum} ${passive} runs/${model}_${peeling}_${runDate}_${custom}
 
 
 if [ ${makeParams} == ${true} ]
@@ -263,7 +264,7 @@ ga_dir=runs/${model}_${peeling}_${runDate}_${custom}/genetic_alg
 
 if [ ${runGA} == ${true} ]
   then
-    sbatch ${ga_dir}/neuron_genetic_alg/runGA.slr
+    sbatch ${ga_dir}/neuron_genetic_alg/slurm_scripts/runGA.slr
   fi
 
 

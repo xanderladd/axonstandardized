@@ -44,9 +44,9 @@ if 'log_transform_params' in inputs:
 else:
     log_transform_params = False
 if usePrev == "True":
-    params_csv = '../../params/params_' + model + '_' + peeling + '_prev.csv'
+    params_csv = data_dir + '/params/params_' + model + '_' + peeling + '_prev.csv'
 else:
-    params_csv = '../../params/params_' + model + '_' + peeling + '.csv'
+    params_csv = data_dir + '/params/params_' + model + '_' + peeling + '.csv'
 base_thresh = 50
 
 
@@ -116,7 +116,7 @@ if not passive:
     score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
     weights = objectives_file['opt_weight_list'][:]
     opt_stim_names = objectives_file['opt_stim_name_list'][:]
-    stims_path = '../../stims/' + inputs['stim_file'] + '.hdf5'
+    stims_path = data_dir + '/stims/' + inputs['stim_file'] + '.hdf5'
     stim_file = h5py.File(stims_path, 'r')
     assert len(opt_stim_names) == (len(weights) /  len(score_function_ordered_list)), "Score function weights and stims are mismatched"
     
@@ -124,12 +124,18 @@ if not passive:
     opt_stim_names = np.append(opt_stim_names, added_stims)
     print(opt_stim_names, "STIMS IN USE")
     target_volts_path = '../../target_volts/target_volts_{}.hdf5'.format(inputs['modelNum'])
+    target_volts_path_2 = '../../target_volts/allen_data_target_volts_{}.hdf5'.format(inputs['modelNum'])
     if os.path.isfile(target_volts_path):
         print('found allen target volts')
         target_volts = h5py.File(target_volts_path,'r')
         target_volts = [target_volts[elem] for elem in opt_stim_names]
+    elif os.path.isfile(target_volts_path_2):
+        print('found allen target volts')
+        target_volts = h5py.File(target_volts_path_2,'r')
+        target_volts = [target_volts[elem] for elem in opt_stim_names]
     else:
         target_volts = None
+        
         
         
     ap_tune_stim_name = '18'
@@ -138,7 +144,7 @@ else:
     opt_weight_list = objectives_file['opt_weight_list'][:]
     opt_stim_names = objectives_file['opt_stim_name_list'][:]
     score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
-    stims_path = '../../stims/' + inputs['stim_file'] + '_passive.hdf5'
+    stims_path = data_dir + 'stims/' + inputs['stim_file'] + '_passive.hdf5'
     stim_file = h5py.File(stims_path, 'r')
     weights = []
 
