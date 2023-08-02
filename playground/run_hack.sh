@@ -19,6 +19,7 @@ wrkDir=runs/${model}_${peeling}_${runDate}_${custom}
 cp input.txt ${wrkDir}/
 mkdir -p ${wrkDir}/'volts'	
 mkdir -p ${wrkDir}/'scores'	
+mkdir -p ${wrkDir}/'objectives'
 mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'slurm'	
 mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'stims'
 
@@ -55,9 +56,7 @@ fi
 
  
 # check that files are seteup correctly
-echo "step 1 done"
 sh param_stim_generator/allen_generator/check_files.sh ${modelNum} ${passive}
-echo "step 2 done"
 
 if [ $? != 0 ];
 then
@@ -68,7 +67,6 @@ echo "stims / target volts made"
 
 # move them up
 sh param_stim_generator/allen_generator/move_files.sh ${modelNum} ${passive} runs/${model}_${peeling}_${runDate}_${custom}
-echo "step 3 done"
 
 
 if [ ${makeParams} == ${true} ]
@@ -94,7 +92,6 @@ cp -rp ${data_dir}/target_volts/ ${wrkDir}/${dirToRun}/
 # if num_volts is 0 and num_nodes is 10 will split all stims between 10 nodes 
 python python_scripts/modifySandboxArray.py $num_volts $num_nodes
 
-echo "step 4 done"
 
 #LOCAL, uses shell script for local imitation
 if [ ${makeVolts} == ${true} ]
@@ -138,11 +135,9 @@ if [ ${wait4volts} == ${true} ] # if we're making volts, check we've made em all
     shopt -u nullglob
 fi
 #move the slurm into runs
-echo "step 5 done"
 
 mv slurm* runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
 
-echo "step 6 done"
 
 
 
@@ -191,11 +186,15 @@ cp -p ${dirToRun} ${wrkDir}/genetic_alg/
 mkdir -p ${wrkDir}/genetic_alg/optimization_results/
 mkdir -p ${wrkDir}/genetic_alg/objectives/
 
+cp -r analyze_p_bbp_full ${wrkDir}
 
+currDir=`pwd`
 
 if [ ${makeOpt} == ${true} ]
   then
+    cd ${wrkDir}
     sh analyze_p_bbp_full/analyze_p.slr
+    cd ${currDir}
   
 
     echo waiting on optimzation...
@@ -212,8 +211,10 @@ if [ ${makeOpt} == ${true} ]
 
 if [ ${makeObj} == ${true} ]
   then
+    cd ${wrkDir}
     python analyze_p_bbp_full/analyze_p_multistims.py --model ${model} --peeling ${peeling} \
     --CURRENTDATE ${runDate} --custom ${custom}
+    cd ${currDir}
   fi
 
 # shopt -s nullglob
@@ -228,7 +229,7 @@ if [ ${makeObj} == ${true} ]
 # shopt -u nullglob
 
 wrkDir=runs/${model}_${peeling}_${runDate}_${custom}/genetic_alg
-cp -r params $wrkDir/
+cp -r ${data_dir}/params $wrkDir/
 cp param_stim_generator/params_reference/* $wrkDir/params/
 
 
@@ -243,7 +244,8 @@ fi
 
 if [ ${runGA} == ${true} ]
   then
-    sbatch ${wrkDir}/neuron_genetic_alg/runGA.slr
+    cd runs/${model}_${peeling}_${runDate}_${custom}/genetic_alg/neuron_genetic_alg
+    sbatch slurm_scripts/runGA_allen_perl.slr
   fi
 
 

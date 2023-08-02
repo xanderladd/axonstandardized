@@ -237,7 +237,8 @@ ga_dir=runs/${model}_${peeling}_${runDate}_${custom}/genetic_alg
 
 if [ ${runGA} == ${true} ]
   then
-    sbatch ${ga_dir}/neuron_genetic_alg/slurm_scripts/runGA.slr
+    cd ${ga_dir}/neuron_genetic_alg
+    sbatch slurm_scripts/runGA_allen_perl.slr
   fi
 
 

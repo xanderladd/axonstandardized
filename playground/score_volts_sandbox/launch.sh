@@ -31,6 +31,6 @@ cd ${wrkDir}/${dirToRun}
 export OMP_NUM_THREADS=1
 
 
-srun -n 64 -N 1 python score_volts_hdf5_efficent_sandbox.py $arrIdx > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
+srun -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
 # fi
 echo DONE!E!E!!!!!!
