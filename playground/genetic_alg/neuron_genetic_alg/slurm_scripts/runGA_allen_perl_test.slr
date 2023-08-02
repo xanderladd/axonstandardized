@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#SBATCH --qos=debug
+#SBATCH --time=00:10:00
+#SBATCH --nodes=1
+#SBATCH --constraint=cpu
+
+
+cd ../
+source ../../input.txt
+echo running GA
+echo OFFSPRING_SIZE is ${OFFSPRING_SIZE}
+echo for ${MAX_NGEN} generations
+
+
+seed=$((10000 + $RANDOM % 100000))
+
+#seed=1132 # not used
+
+
+
+echo seed: ${seed}
+export OMP_NUM_THREADS=1
+
+python optimize_parameters_genetic_alg.py \
+    -vv                                \
+    --compile                          \
+    --offspring_size=1              \
+    --max_ngen=2                   \
+    --seed=${seed}                     \
+    --checkpoint ${seed}_ckpt      \
+    --start  > GA_out_${seed}.log  

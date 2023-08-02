@@ -7,12 +7,22 @@ from scipy import stats
 import h5py
 import pickle
 import os
+import sys
+import math
 from allensdk.core.nwb_data_set import NwbDataSet
 import concurrent.futures
-os.chdir("neuron_genetic_alg/neuron_files/allen")
-from neuron import h
-os.chdir("../../../")
-print(os.getcwd())
+os.chdir("neuron_genetic_alg/")
+sys.path.append(os.getcwd())
+import hoc_utils
+from config import *
+import run_model
+# print(os.getcwd(), 'bfeore going')
+# os.chdir(neuron_path) 
+# print(os.getcwd(), 'after')
+# from neuron import h
+# os.chdir("../../")
+os.chdir("../")
+import cfg
 import sys
 import pandas as pd
 from tqdm import tqdm
@@ -92,23 +102,7 @@ def read_best_params(opt_result_path, base_path, opt_ind):
         
     return best_full
 
-# Running a single volt
-def run_single_volts(param_set, stim_data, dt):
 
-    print('running volts')
-    run_file = 'neuron_genetic_alg/neuron_files/allen/run_model_cori.hoc'
-    h.load_file(run_file)
-
-    total_params_num = len(param_set)
-    ntimestep = len(stim_data)
-    timestamps = np.array([dt for i in range(ntimestep)])
-    h.curr_stim = h.Vector().from_python(stim_data)
-    h.transvec = h.Vector(total_params_num, 1).from_python(param_set)
-    h.stimtime = h.Matrix(1, len(timestamps)).from_vector(h.Vector().from_python(timestamps))
-    h.ntimestep = ntimestep
-    h.runStim()
-    out = h.vecOut.to_python()
-    return np.array(out)
 
 def sample_stim(raw_stim, orig_rate, stim_kind, sample_rate=100):
     sampled_stim = []
@@ -126,19 +120,45 @@ def convert_scale(stim, sample_rate):
     return np.array(stim)*10**9, 1/sample_rate*1000
 
 
-
-GA_result_path = 'neuron_genetic_alg/best_indv_logs/best_indvs_gen_6.pkl'
+folders = os.listdir('neuron_genetic_alg')
+folders = [os.path.join('neuron_genetic_alg', f) for f in folders if 'best_indv' in f and os.path.isdir(os.path.join('neuron_genetic_alg', f))] # add path to each file
+folders.sort(key=lambda x: os.path.getmtime(x))
+files = os.listdir(folders[-1])
+files = [os.path.join(folders[-1], f) for f in files if 'best_indv' in f]
+                     
+GA_result_path = files[-1]
 # base_params_path = './params/params_bbp_full_gpu_tuned_10_based.csv'
-base_params_path = './params/params_allen_full.csv'
+df = pd.read_csv(cfg.params_csv, skipinitialspace=True, usecols=['Base value'])
+
+base_full = df.values.T[0]
+#base_full = bbp_params_base
+# opt_ind = [0,1,6,9,13,14,15]
+
+opt_ind = np.arange(16)
+base = [base_full[i] for i in opt_ind]
+
+df = pd.read_csv(cfg.params_csv, skipinitialspace=True, usecols=['Param name','Lower bound', 'Upper bound'])
+lbs = np.array(df['Lower bound'])
+ubs = np.array(df['Upper bound'])
+names = df['Param name']
+bases, orig_params, mins, maxs = hoc_utils.log_params(ubs, lbs, base_full)
 
 # opt_ind=[0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-opt_ind = np.arange(16)
-best_params = read_best_params(GA_result_path, base_params_path, opt_ind)
-best_params[1] = - best_params[1]
-model_num = str(488683423)
-os.makedirs('./model_responses',exist_ok=True)
+opt_ind = cfg.params_opt_ind
+best_params = read_best_params(GA_result_path, cfg.params_csv, opt_ind)
+
+if cfg.model == 'compare_bbp':
+    best_params[1] = - best_params[1]
+
+if cfg.log_transform_params:
+    for i in range(len(best_params)):
+        if bases[i] > base_thresh:
+            best_params[i] = math.pow(bases[i], best_params[i])
+
+
 os.makedirs('./compare_responses',exist_ok=True)
-original_file_name = f'./model_responses/{str(488683423)}.nwb'
+original_file_name = f'./allen_model/{cfg.model_num}_ephys.nwb'
+
 orig_dataset = NwbDataSet(original_file_name)
 sweep_numbers = sorted(orig_dataset.get_experiment_sweep_numbers())
 
@@ -164,7 +184,9 @@ sampling_rate = sweep_data['sampling_rate']
 sampled_stim, dt = convert_scale(stimulus, sampling_rate)
 # sampled_stim, dt = sample_stim(stimulus, sampling_rate, stim_kind)
 print(f'running {sweep_number}')
-volts = run_single_volts(best_params, sampled_stim, dt)
+
+volts = run_model.run_model_stim(best_params, sampled_stim, dt, mod_dir='./neuron_genetic_alg/neuron_files/M1_TTPC_NA_HH/')
+
 np.savetxt(output_path, volts, delimiter=',')
 # output_file.create_dataset(str(sweep_number)+'_stimulus', data=np.array(stimulus))
 # output_file.create_dataset(str(sweep_number)+'_response', data=np.array(volts))

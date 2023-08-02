@@ -32,7 +32,7 @@ assert 'model' in inputs, "No model specified"
 assert 'peeling' in inputs, "No peeling specified"
 assert 'seed' in inputs, "No seed specified"
 
-assert inputs['model'] in ['mainen', 'bbp', 'allen', 'compare_bbp'], "Model must be from: \'allen\' \'mainen\', \'bbp\' or \'compare_allen\'. Do not include quotes."
+assert inputs['model'] in ['mainen', 'bbp', 'allen', 'compare_bbp', 'M1_TTPC_NA_HH'], "Model must be from: \'allen\' \'mainen\', \'bbp\' or \'compare_allen\'. Do not include quotes."
 
 
 assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."

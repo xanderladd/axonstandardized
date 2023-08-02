@@ -70,7 +70,9 @@ The folling environment variables are considered:
 
 
 def save_logs(fn, best_indvs, population):
-    output = open("./best_indv_logs/best_indvs_gen_"+str(gen_counter)+fn, 'wb')
+    seed = os.getenv('BLUEPYOPT_SEED')
+    os.makedirs(f"./best_indv_logs{seed}", exist_ok=True)
+    output = open(f"./best_indv_logs{seed}/best_indvs_gen_"+str(gen_counter)+fn, 'wb')
     pickle.dump(best_indvs, output)
     output.close()
     
@@ -164,7 +166,10 @@ def my_ea(
         if starting_pop_hack and global_rank == 0:
             print('starting pop from : ', starting_pop_hack)
             with open(starting_pop_hack,'rb') as f: data = pickle.load(f)
-            population = data['population']
+            # decide if we can do full injection
+            inject_len = min(len(data['population']), len(population)) 
+            # inject population
+            population[:inject_len] = data['population'][:inject_len]
          
         population = comm.bcast(population, root=0)
         parents = population[:]

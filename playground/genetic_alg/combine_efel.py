@@ -3,6 +3,7 @@ import os
 os.chdir('neuron_genetic_alg')
 from config import *
 os.chdir('../')
+import cfg
 
 prefix ='efel_data/subsets'
 files = os.listdir(prefix)
@@ -15,4 +16,4 @@ for file in files:
     for key in data.keys():
         res[key] = data[key]
 
-pickle.dump(res, open(f'./efel_data/efel_dataset_model_{model_num}.pkl', 'wb'))
+pickle.dump(res, open(f'./efel_data/efel_dataset_model_{cfg.model_num}.pkl', 'wb'))

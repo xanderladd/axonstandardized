@@ -22,7 +22,7 @@ assert 'user' in inputs, "No user specified"
 assert 'model' in inputs, "No model specificed"
 assert 'peeling' in inputs, "No peeling specificed"
 assert 'seed' in inputs, "No seed specificed"
-assert inputs['model'] in ['allen', 'mainen', 'bbp', 'compare_bbp'], "Model must be from: \'allen\' \'mainen\', \'bbp\'. Do not include quotes."
+assert inputs['model'] in ['allen', 'mainen', 'bbp', 'compare_bbp', 'M1_TTPC_NA_HH'], "Model must be from: \'allen\' \'mainen\', \'bbp\'. Do not include quotes."
 assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."
 assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_full?"
 

@@ -86,8 +86,13 @@ if [ ${makeParams} == ${true} ]
 cp -rp ${data_dir}/params ${wrkDir}/${dirToRun}/
 cp -rp ${data_dir}/stims ${wrkDir}/${dirToRun}/
 cp -rp ${data_dir}/target_volts ${wrkDir}/${dirToRun}/
+cp -rp  python_scripts ${wrkDir}/${dirToRun}/
 
-  
+cp *.py ${wrkDir}
+cp -r volts_sandbox ${wrkDir}
+cp -r score_volts_sandbox ${wrkDir}
+cp run_remainder.sh ${wrkDir}
+
 # set sandbox array parameters in score_sandbox and volt_sandbox
 # to match those in input.txt
 # if num_volts is 0 and num_nodes is 10 will split all stims between 10 nodes 
@@ -122,12 +127,25 @@ if [ ${wait4volts} == ${true} ] # if we're making volts, check we've made em all
         if [[ "$line" == *"DATASET"* ]]; then
             INPUT="$line"
             fileName=$(echo "${INPUT}" | cut -d '"' -f 2)
+            postfix=${fileName}
+            
             fileName="${VOLT_PREFIX}/${fileName}_volts.hdf5"
             # if filename has dt in it, skip
             if [[ $fileName == *"dt"* ]]; then
               continue
             fi
-            while [ ! -f "${fileName}" ]; do sleep 1; done
+            
+            if [[ ! $postfix =~ [0-9] ]]; then
+              
+               continue
+           fi
+           
+
+            while [ ! -f "${fileName}" ]; do 
+                sleep 5; 
+                echo looking fr "${fileName}"
+            done
+            # while [ ! -f "${fileName}" ]; do sleep 1; done
             echo found "${fileName}"
         fi
     done
@@ -159,10 +177,19 @@ if [ ${wait4scores} == ${true} ] # if making scores, check we made em
         if [[ "$line" == *"DATASET"* ]]; then
             INPUT="$line"
             fileName=$(echo "${INPUT}" | cut -d '"' -f 2)
-            fileName="${VOLT_PREFIX}/${fileName}_scores.hdf5"
+            postfix=${fileName}
+            
+            fileName="${VOLT_PREFIX}/${fileName}_volts.hdf5"
+            # if filename has dt in it, skip
             if [[ $fileName == *"dt"* ]]; then
               continue
             fi
+            
+            if [[ ! $postfix =~ [0-9] ]]; then
+              
+               continue
+           fi
+           
             while [ ! -f "${fileName}" ]; do 
                 sleep 5; 
                 # echo looking fr "${fileName}"
@@ -179,8 +206,8 @@ mv slurm* runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
 mkdir ${wrkDir}/genetic_alg
 dirToRun="genetic_alg/neuron_genetic_alg"
 cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
-dirToRun="genetic_alg/GPU_genetic_alg"
-cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
+# dirToRun="genetic_alg/GPU_genetic_alg"
+# cp -rp ${dirToRun} ${wrkDir}/genetic_alg/
 dirToRun="genetic_alg/*"
 cp -p ${dirToRun} ${wrkDir}/genetic_alg/
 
