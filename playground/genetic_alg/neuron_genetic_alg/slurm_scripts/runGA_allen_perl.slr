@@ -1,145 +1,31 @@
 #!/bin/bash
 
 #SBATCH --qos=regular
-#SBATCH --time=10:00:00
-#SBATCH --nodes=8
+#SBATCH --time=12:00:00
+#SBATCH --nodes=10
 #SBATCH --constraint=cpu
-#SBATCH --mail-user=zladd@berkeley.edu
-#SBATCH --mail-type=ALL
 
 
-
-source ../../../../input.txt
+cd ../
+source ../../input.txt
 echo running GA
 echo OFFSPRING_SIZE is ${OFFSPRING_SIZE}
 echo for ${MAX_NGEN} generations
 
 
-seed=1904 # used
-
-#seed=1132 # not used
-
+seed=$((10000 + $RANDOM % 100000))
+export BLUEPYOPT_SEED=${seed}
 
 
 echo seed: ${seed}
 export OMP_NUM_THREADS=1
 
-srun -n 2000 python optimize_parameters_genetic_alg.py \
+srun -n 2500 python optimize_parameters_genetic_alg.py \
     -vv                                \
     --compile                          \
     --offspring_size=10000              \
     --max_ngen=500                   \
     --seed=${seed}                     \
-    --checkpoint 05_25      \
-    --start  > GA_out.log  
-    
-
-
-srun -n 4000 --mpi=pmi2 python optimize_parameters_genetic_alg.py \
-    -vv                                \
-    --compile                          \
-    --offspring_size=4000              \
-    --max_ngen=1000                   \
-    --seed=${seed}                     \
-    --checkpoint 09_12      \
- 
-    
-srun -n 4000 --mpi=pmi2 python optimize_parameters_genetic_alg.py \
-    -vv                                \
-    --compile                          \
-    --offspring_size=4000              \
-    --max_ngen=1000                   \
-    --seed=${seed}                     \
-    --checkpoint 05_14      \
-    --starting_pop /global/cscratch1/sd/zladd/axonstandardized/playground/runs/allen_full_5_14_22_487664663/genetic_alg/neuron_genetic_alg/best_indv_logs_05_03_obj_seed_1132/05_14 
-    --start  > GA_out.log
-    
-    
-    
-
-srun -n 1900 --mpi=pmi2 python optimize_parameters_genetic_alg.py \
-    -vv                                \
-    --compile                          \
-    --offspring_size=3500              \
-    --max_ngen=1000                   \
-    --seed=${seed}                     \
-    --checkpoint 05_21      \
-    --start  > GA_out.log
-    
-    
-    
-    
-
-    
-exit
-
- #   --continu                \
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-srun -n 4000 --mpi=pmi2 python optimize_parameters_genetic_alg.py \
-    -vv                                \
-    --compile                          \
-    --offspring_size=7950              \
-    --max_ngen=1000                   \
-    --seed=${seed}                     \
-    --starting_pop feb_16_seed3             \
-    --checkpoint feb_16_seed3_1             \
-    --start  > GA_out.log
-    
-exit
-
-
-
-    
-
-
-exit
-#   --checkpoint feb_5               \
-#     --continu                      
-
-#   --checkpoint feb_5               \
-#     --continu                          \
-
-#   --continu                          \
-#    --continu                          \
-
-
-# If job finishes in time analyze result
-#--checkpoint balance               \
-#--continu                          \
-
-#mv ${CHECKPOINTS_DIR}/seed${seed}.pkl checkpoints_final/
-# check if the job with 4th seed is finished
-
-# if [[ $seed = 4 ]]; then
-#   sbatch analyse_stage2.slurm
-# else
-#   seed_new=$(($seed+1))
-#   sed -i -e "s/seed in $seed/seed in $seed_new/g" start_haswell.sh
-#   sed -i -e "s/seed in $seed/seed in $seed_new/g" restart_haswell.sh
-#   sbatch start_batchjob_stage2.slurm
-# fi
-
-
-
-srun -n 2 --mpi=pmi2 python optimize_parameters_genetic_alg.py \
-    -vv                                \
-    --compile                          \
-    --offspring_size=1              \
-    --max_ngen=2                   \
-    --seed=${seed}                     
+    --checkpoint ckpts/${seed}_ckpt      \
+    --start  > GA_out${seed}.log  
     

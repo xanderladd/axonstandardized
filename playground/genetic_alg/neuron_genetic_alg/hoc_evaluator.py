@@ -94,9 +94,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         scores, ranks, curr_rank = [], [], global_rank
         
         while curr_rank < len(param_values):
-            
+            start_Vm = self.target_volts[0][0]
             curr_params = self.assign_params(param_values[curr_rank])
-            simulated_volts = run_model.run_model(curr_params, config.opt_stim_names, config.dt)
+            simulated_volts = run_model.run_model(curr_params, config.opt_stim_names, config.dt, start_Vm=start_Vm)
             
             curr_score = hoc_utils.evaluate_score_function(config.opt_stim_names, self.target_volts, simulated_volts, config.weights)
             curr_score = curr_score[0]
