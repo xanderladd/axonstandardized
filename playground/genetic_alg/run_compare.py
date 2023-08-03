@@ -147,15 +147,15 @@ bases, orig_params, mins, maxs = hoc_utils.log_params(ubs, lbs, base_full)
 opt_ind = cfg.params_opt_ind
 best_params = read_best_params(GA_result_path, cfg.params_csv, opt_ind)
 
-if cfg.model == 'compare_bbp':
-    best_params[1] = - best_params[1]
-
 if cfg.log_transform_params:
     for i in range(len(best_params)):
         if bases[i] > base_thresh:
             best_params[i] = math.pow(bases[i], best_params[i])
 
-
+if len(negative_param_inds):
+    for ind in negative_param_inds:
+        best_params[ind] = - np.abs(best_params[ind])
+    
 os.makedirs('./compare_responses',exist_ok=True)
 original_file_name = f'./allen_model/{cfg.model_num}_ephys.nwb'
 
