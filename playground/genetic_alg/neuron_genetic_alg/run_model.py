@@ -95,7 +95,7 @@ elif config.model == 'allen':
 
         return responses
 elif config.model == 'M1_TTPC_NA_HH':
-    def run_model(param_set, stim_name_list, dt):
+    def run_model(param_set, stim_name_list, dt, start_Vm=-72):
         model = NeuronModel(mod_dir = './neuron_files/M1_TTPC_NA_HH/')
         model.update_params(param_set)
         volts_list = []
@@ -107,15 +107,15 @@ elif config.model == 'M1_TTPC_NA_HH':
         for curr_stim_name in stim_name_list:
             stim = stims[curr_stim_name][:]
             curr_dt = retrieve_dt(curr_stim_name, stims, dt=dt)
-            Vm, I, t, stim = model.run_model_compare(stim, dt=curr_dt)
+            Vm, I, t, stim = model.run_model_compare(stim, dt=curr_dt, start_Vm=start_Vm)
             volts_list.append(Vm)
         return np.array(volts_list)
     
-    def run_model_stim(param_set, stim, dt, mod_dir='./neuron_files/M1_TTPC_NA_HH/'):
+    def run_model_stim(param_set, stim, dt, mod_dir='./neuron_files/M1_TTPC_NA_HH/', start_Vm=-72):
         model = NeuronModel(mod_dir = mod_dir )
         model.update_params(param_set)
         volts_list = []
-        Vm, I, t, stim = model.run_model_compare(stim, dt=dt)
+        Vm, I, t, stim = model.run_model_compare(stim, dt=dt, start_Vm=start_Vm)
         volts_list.append(Vm)
         return np.array(volts_list)
 
