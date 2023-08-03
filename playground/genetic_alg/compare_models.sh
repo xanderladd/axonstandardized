@@ -11,7 +11,7 @@ cd ../
 python prepare_allen_model.py
 
 srun -n 200 python run_compare.py &
-cd allen_model;  python -m allensdk.model.biophysical.runner manifest.json &
+cd allen_model;  python -m allensdk.model.biophysical.runner manifest.json 
 
 cd ../
 
