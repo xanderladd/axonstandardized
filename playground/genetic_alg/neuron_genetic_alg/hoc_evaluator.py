@@ -67,7 +67,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         # undo log x-form
         if config.log_transform_params:
             for i, opt_ind in enumerate(config.params_opt_ind):
-                if self.bases[i] > config.base_thresh:
+                if self.bases[i] > config.base_thresh and self.orig_params[i]:
                     modified_params[opt_ind] = math.pow(self.bases[i], modified_params[opt_ind])
         # turn param neg
         # CONFIG Negative param inds

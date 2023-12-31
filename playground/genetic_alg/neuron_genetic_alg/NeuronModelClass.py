@@ -7,10 +7,17 @@ Created on Sat Oct 16 21:07:44 2021
 import argparse
 import numpy as np
 # from vm_plotter import *
+# from neuron import h
+import config
+import os
+os.chdir(config.neuron_path) 
 from neuron import h
+os.chdir("../../")
 import os
 import sys
 import pdb
+import currentscape
+
 
 class NeuronModel:
     def __init__(self, mod_dir = './neuron_files/M1_TTPC_NA_HH/',#'./Neuron_Model_HH/', 
@@ -151,14 +158,33 @@ class NeuronModel:
             h.node_na = params[14]
             h.soma_K = params[15]
             h.dend_k = params[16]
-            h.gpas_all = params[17]
-            h.cm_all = params[18]
+            # h.gpas_all = params[17]
+            # h.cm_all = params[18]
+            
+            h.cell.soma[0].g_pas = params[17]
+            h.cell.axon[0].g_pas = params[17]
+            h.cell.axon[1].g_pas = params[17]
+            for i in range(len(h.cell.dend)):
+                h.cell.dend[i].g_pas = params[17]
+            
+            h.cell.soma[0].cm = params[18]
+            h.cell.axon[0].cm = params[18]
+            h.cell.axon[1].cm = params[18]
+            for i in range(len(h.cell.dend)):
+                h.cell.dend[i].cm = params[18]
+
             if len(params) > 19:
                 h.cell.soma[0].e_pas = params[19]
                 h.cell.axon[0].e_pas = params[19]
                 h.cell.axon[1].e_pas = params[19]
                 for i in range(len(h.cell.dend)):
                     h.cell.dend[i].e_pas = params[19]
+                    
+                    
+                h.cell.soma[0].gIhbar_Ih = params[20]
+                for i in range(len(h.cell.dend)):
+                    h.cell.dend[i].gIhbar_Ih = params[20]
+                    
         h.working()
 
     def run_model_compare(self, stim, dt, start_Vm=-72):
@@ -169,18 +195,8 @@ class NeuronModel:
         h.dt = dt
         h.finitialize(start_Vm)
         clamp = h.IClamp(h.cell.soma[0](0.5))
-        # h.st = clamp
-        # stim_vec = h.Vector(stim)
-        # stim_vec.play(clamp._ref_amp, dt)
-        # # stim_vec.play(clamp.amp, dt)
         clamp.delay = 0
         clamp.dur = 1e9
-#         h.tstop = len(stim) / (h.steps_per_ms * dt)
-        
-#         v = h.Vector().record(h.cell.soma[0](.5)._ref_v)             # Membrane potential vector
-#         t = h.Vector().record(h._ref_t)                     # Time stamp vector
-#         i = h.Vector().record(clamp._ref_amp)
-        
         v = []
         t = []
         for timestep in range(len(stim)):
@@ -234,149 +250,150 @@ class NeuronModel:
             return Vm, I, t, stim,extra_Vms
         else:
             return Vm, I, t, stim
-
-    def run_sim_model(self,start_Vm = -72, dt= 0.1,sim_config = {
+    
+    
+    def run_model_compare_cs(self, stim, dt, start_Vm=-72, sim_config = {
                 'section' : 'soma',
                 'section_num' : 0,
                 'segment' : 0.5,
                 'currents'  :['ina','ica','ik'],
                 'ionic_concentrations' :["cai", "ki", "nai"]
             }):
-         
-        """
-        Runs a simulation model and returns voltage, current, time, and stimulation data.
-
-        Args:
-            start_Vm (float): Initial membrane potential (default: -72 mV).
-            dt (float): Time step size for the simulation (default: 0.1 ms).
-            sim_config (dict): Configuration dictionary for simulation parameters (default: see below).
-
-        Returns:
-            Vm (ndarray): Recorded membrane voltages over time.
-            I (dict): Current traces for different current types.
-            t (ndarray): Time points corresponding to the recorded data.
-            stim (ndarray): Stimulation amplitudes over time.
-
-        Description:
-            This function runs a simulation model and records the membrane voltage, current traces, time points,
-            and stimulation amplitudes over time. The simulation model is configured using the provided parameters.
-
-        Default Simulation Configuration:
-            'section': 'soma'
-            'segment': 0.5
-            'section_num' : 0
-            'currents'  :['ina','ica','ik'],
-            'ionic_concentrations' :["cai", "ki", "nai"]
-
-        Example Usage:
-            Vm, I, t, stim = run_sim_model(start_Vm=-70, dt=0.05, sim_config={
-                'section': 'soma',
-                'section_num' : 0,
-                'segment': 0.5,
-                'currents'  :['ina','ica','ik'],
-                'ionic_concentrations' :["cai", "ki", "nai"]
-            })
-        """
-        
-        h.dt=dt
+        # updates the stimulation params used by the model
+        # time values are in ms
+        # amp values are in nA
+        # clamp = h.st
+        h.dt = dt
         h.finitialize(start_Vm)
-        timesteps = int(h.tstop/h.dt)
-        #initialise to zeros,
-        #current_types = list(set(sim_config['inward'] + sim_config['outward']))
+        clamp = h.IClamp(h.cell.soma[0](0.5))
+        clamp.delay = 0
+        clamp.dur = 1e9
+        timesteps = len(stim)
+        v = []
+        t = []
         current_types = sim_config['currents']
         ionic_types = sim_config['ionic_concentrations']
-        Vm = np.zeros(timesteps, dtype=np.float64)
+        
         I = {current_type: np.zeros(timesteps, dtype=np.float64) for current_type in current_types}
+        
         ionic = {ionic_type : np.zeros(timesteps,dtype=np.float64) for ionic_type in ionic_types}
-        #print(f"I : {I}")
-        stim = np.zeros(timesteps, dtype=np.float64)
-        t = np.zeros(timesteps, dtype=np.float64)
+        
         section = sim_config['section']
         section_number = sim_config['section_num']
         segment = sim_config['segment']
+        
         volt_var  = "h.cell.{section}[{section_number}]({segment}).v".format(section=section, section_number=section_number,segment=segment)
-        #print(eval("h.psection()"))
-        #print(h("topology()"))
-        #val = eval("h.cADpyr232_L5_TTPC1_0fb1ca4724[0].soma[0](0.5).na12mut.ina_ina")
-        #print(f"na16 mut {val}")
         curr_vars={}
-        # for current_type in current_types:
-        #     if current_type == 'ina_ina_na12':
-        #         curr_vars[current_type] =  "h.cell.{section}[0].{current_type}".format(section=section, segment=segment, current_type=current_type) 
-        #     else:
-        #         curr_vars[current_type] = "h.cell.{section}[0]({segment}).{current_type}".format(section=section, segment=segment, current_type=current_type) 
         curr_vars = {current_type : "h.cell.{section}[{section_number}]({segment}).{current_type}".format(section=section, section_number=section_number, segment=segment, current_type=current_type) for current_type in current_types}
         print(f"current_vars : {curr_vars}")
         ionic_vars = {ionic_type : "h.cell.{section}[{section_number}]({segment}).{ionic_type}".format(section=section , section_number=section_number, segment=segment, ionic_type=ionic_type) for ionic_type in ionic_types}
-        #print(f"ionic_vars : {ionic_vars}")
-        for i in range(timesteps):
-            Vm[i] =eval(volt_var)
-            try :
-                for current_type in current_types:
-                    I[current_type][i] = eval(curr_vars[current_type])
-
-                #getting the ionic concentrations
-                for ionic_type in ionic_types:
-                    ionic[ionic_type][i] = eval(ionic_vars[ionic_type])
-            except Exception as e:
-                print(e)
-                print("Check the config files for the correct Attribute")
-                sys.exit(1)
-
-            stim[i] = h.st.amp
-            t[i] = i*h.dt / 1000
+        
+        
+        for timestep in range(len(stim)):
+            h.dt = dt
+            clamp.amp = stim[timestep]
             h.fadvance()
-        #print(f"I : {I}")
-        return Vm, I, t, stim, ionic
+            v.append(h.cell.soma[0].v)
+            t.append(dt)
+            
+            for current_type in current_types:
+                I[current_type][timestep] = eval(curr_vars[current_type])
+
+            for ionic_type in ionic_types:
+                ionic[ionic_type][timestep] = eval(ionic_vars[ionic_type])
+            # print(h.cell.soma[0].v, timestep)
+            
+        return v, I, t, stim, ionic
+        
+
+    def make_currentscape_plot_stim(self,stim, dt, start_Vm=-72, sim_config = {
+                    'section' : 'soma',
+                    'segment' : 0.5, ##0.5 should be half way down AIS
+                    'section_num': 0,
+                    'currents'  : ['ihcn_Ih','ica_Ca_HVA','ica_Ca_LVAst','ik_SKv3_1','ik_SK_E2','na16.ina_ina','na16mut.ina_ina','na12.ina_ina','na12mut.ina_ina','i_pas'], ##Currents must be present in .mod files
+                    #'currents'  :['ina','ica','ik'], ##Example if you have fewer currents
+                    'ionic_concentrations' :["cai", "ki", "nai"]
+            }):
+
+            current_names = ['Ih','Ca_HVA','Ca_LVAst','SKv3_1','SK_E2','Na16 WT','Na16 WT','Na12','Na12 MUT','pas'] ##Current names in order of 'currents'in sim_config. Or if you don't want different curent names, use- current_names = sim_config['currents']
+
+
+            #amp = 0.5 ##Modify stimulus current
+            #sweep_len = 800 ##Modify this to change total length of recording
+            # self.init_stim(stim_start =stim_start,amp=amp,sweep_len = sweep_len) ##Modify stim_start to change with the stimulus starts. Helpful when looking at single APs
+            Vm, I, t, stim, ionic = self.run_model_compare_cs(stim, dt=dt, start_Vm=start_Vm)
+            
+            Vm = np.array(Vm)
+
+
+            ##### Below for plotting user-specified time steps
+            # time1 = 51 ##start time. Must be between 0 < x < sweep_len
+            # time2 = 60 ##end time. Must be between 0 < x < sweep_len
+            time1  = 100
+            time2  = len(stim) - 100
+            step1 = int((time1/dt))
+            step2 = int((time2/dt))
+            Vmsteplist = Vm[step1:step2] ##assign new list for range selected between two steps
+            maxvm = max(Vm[step1:step2]) ##gets max voltage
+            indexmax = Vmsteplist.argmax() ##gets index (time point in Vmsteplist) where max voltage is
+            #####
+            self.plot_folder = 'plots'
+            self.pfx = 'pfx'
+
+
+            plot_config = {
+                "output": {
+                    "savefig": True,
+                    #"dir": "./Plots/12HMM16HH_TF/SynthMuts_120523/Currentscape/", ##can hardcode output directory path
+                    "dir": f"{self.plot_folder}",
+                    #"fname": "Na12_mut22_1nA_800ms", ##Change file name here
+                    "fname":f"{self.pfx}_34_{len(stim)}",
+                    "extension": "pdf", ##choose pdf or other image extension
+                    #"extension": "jpg",
+                    "dpi": 600,
+                    "transparent": False},
+
+                "show":{#"total_contribution":True, ##adds pie charts for overall contribution of currents over full recording
+                        #"all_currents":True, ##adds line plots below currents to to show currents over time (rather than just percentage of total)
+                        "currentscape": True}, ##Shows currentscape
+
+                "colormap": {"name":"colorbrewer.qualitative.Paired_10"}, ##Can change color pallets. The _# means how many colors in that pallette. If you don't have enough colors for each current to have unique color, some currents will not be displayed
+                #"colormap": {"name":"cartocolors.qualitative.Prism_10"},
+                #"colormap": {"name":"cmocean.diverging.Balance_10"},
+
+                "xaxis":{"xticks":[25,50,75],
+                         "gridline_width":0.2,},
+
+                "current": {"names": current_names,
+                            "reorder":False,
+                            # "autoscale_ticks_and_ylim":False,
+                            # "ticks":[0.00001, 0.001, 0.1], 
+                            # "ylim":[0.00001,0.01] #yaxis lims[min,max]
+                            },
+
+                "ions":{"names": ["ca", "k", "na"], ##Ionic currents to be displayed at bottom of plot
+                        "reorder": False},
+
+                "voltage": {"ylim": [-90, 50]},
+                "legendtextsize": 5,
+                "adjust": {
+                    "left": 0.15,
+                    "right": 0.8,
+                    "top": 1.0,
+                    "bottom": 0.0
+                    }
+                }
+
+
+            print(f"The max voltage value is {maxvm}")        
+            print(f"The index at which the max voltage happens is {indexmax}")
+
+            #fig = plot_currentscape(Vm, [I[x] for x in I.keys()], plot_config,[ionic[x] for x in ionic.keys()]) ##Default version that plots full sweep_len (full simulation)
+            fig = currentscape.plot(Vm[step1:step2], [I[x][step1:step2] for x in I.keys()], plot_config,[ionic[x][step1:step2] for x in ionic.keys()]) ##Use this version to add time steps, must include time1 and time2 above
+
+
+
+
+
+
     
-  
-#######################
-# MAIN
-#######################
-
-
-
-"""
-
-  def run_sim_model(self, start_Vm=-72, dt=0.1, sim_config=None):     
-        if sim_config is None:
-            sim_config = {
-                'section': 'soma',
-                'segment': 0.5,
-                'inward': ['ina', 'ica'],
-                'outward': ['ik']
-            }
-
-        h.dt = dt
-        h.finitialize(start_Vm)
-        timesteps = int(h.tstop / h.dt)
-        current_types = list(set(sim_config['inward'] + sim_config['outward']))
-        Vm_vec = h.Vector()
-        I_vecs = {current_type: h.Vector() for current_type in current_types}
-        stim_vec = h.Vector()
-        t_vec = h.Vector()
-
-        section = sim_config['section']
-        segment = sim_config['segment']
-        compt_sec = getattr(h.cell, section)[0](segment)
-
-        Vm_vec.record(compt_sec._ref_v)
-        for current_type in current_types:
-            curr_var = getattr(compt_sec, "_ref_{current_type}".format(current_type=current_type))
-            I_vecs[current_type].record(curr_var)
-
-        stim_vec.record(h.st._ref_amp)
-        t_vec.record(h._ref_t)
-
-        h.frecord_init()  # Enable recording of state variables
-        h.continuerun(timesteps)  # Run the simulation
-
-        Vm = np.array(Vm_vec)
-        I = {current_type: np.array(I_vecs[current_type]) for current_type in current_types}
-        stim = np.array(stim_vec)
-        t = np.array(t_vec) / 1000.0
-
-        return Vm, I, t, stim
-
-
-"""

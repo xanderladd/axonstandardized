@@ -186,7 +186,10 @@ elif stim_file == "both_stims":
                         'mean_AP_amplitude',\
                         'voltage_after_stim',\
                         'AP_amplitude_from_voltagebase',\
-                        'min_voltage_between_spikes'])
+                        'min_voltage_between_spikes', \
+        # added for fig3 sfs
+                        'ISI_CV', \
+                        'inv_first_ISI'])
     efel_score_functions = sorted(efel_score_functions1 + efel_score_functions2)
     
 else:
@@ -263,6 +266,9 @@ else:
                         'voltage_after_stim',\
                         'AP_amplitude_from_voltagebase',\
                         'min_voltage_between_spikes'])
+                        # # added for fig3 sfs
+                        # 'ISI_CV', \
+                        # 'inv_first_ISI'])
 score_functions = custom_score_functions + efel_score_functions
 COMM = MPI.COMM_WORLD
 print(COMM.size, "COM SIZE")
@@ -312,7 +318,7 @@ for k in range(len(volts_name_list)):
         curr_function = score_functions[function_ind]
         orig_volts_data = volts[orig_volts_name][:]
         
-        if orig_volts_data.shape[1] == config.ntimestep:
+        if len(orig_volts_data.shape) > 1 and orig_volts_data.shape[1] == config.ntimestep:
             orig_volts_data = orig_volts_data[0]
             
         if prefix == 'pin':
