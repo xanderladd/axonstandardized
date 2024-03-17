@@ -2,7 +2,6 @@ import sys
 import os
 import h5py
 import copy
-# changed 12/18 ^^
 
 
 ##########################
@@ -51,6 +50,10 @@ elif model == 'allen':
 elif model == 'M1_TTPC_NA_HH':
     neuron_path = 'neuron_files/M1_TTPC_NA_HH'
     run_file = None
+    print("******TURNING E PAS NEGATIVE HACK*******")
+    if "20" in param_opt_inds:
+        neg_index = 19
+
 
     
 os.chdir(neuron_path)	
@@ -72,7 +75,6 @@ prefix_list = ['orig', 'pin', 'pdx']
 stims_hdf5 = h5py.File(stims_file_path, 'r')
 params_hdf5 = h5py.File(params_file_path, 'r')
 params_name_list = list(params_hdf5.keys())
-neg_index = None
 
 stims_name_list = sorted(list(stims_hdf5.keys()))
 stims_name_list = [elem for elem in stims_name_list if "dt" not in elem]
@@ -111,3 +113,29 @@ if len(curr_stim_name_list) < 1:
 
 pin_set_size = None
 pdx_set_size = None
+
+input_file = open('../../../input.txt', "r")
+inputs = {}
+input_lines = input_file.readlines()
+for line in input_lines:
+    vals = line.split("=")
+    if len(vals) != 2 and "\n" not in vals:
+        raise Exception("Error in line:\n" + line + "\nPlease include only one = per line.")
+    if "\n" not in vals:
+        inputs[vals[0]] = vals[1][:len(vals[1])-1]
+
+assert 'params' in inputs, "No params specificed"
+assert 'user' in inputs, "No user specified"
+assert 'model' in inputs, "No model specificed"
+assert 'peeling' in inputs, "No peeling specificed"
+assert 'seed' in inputs, "No seed specificed"
+assert inputs['model'] in ['allen', 'mainen', 'bbp', 'compare_bbp', 'M1_TTPC_NA_HH'], "Model must be from: \'allen\' \'mainen\', \'bbp\'. Do not include quotes."
+assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."
+assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_full?"
+
+model = inputs['model']
+peeling = inputs['peeling']
+user = inputs['user']
+data_dir = inputs['data_dir']
+
+stims_path = data_dir + '/stims/' + inputs['stim_file'] + '.hdf5'

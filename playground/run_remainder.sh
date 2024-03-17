@@ -1,6 +1,6 @@
 #!/bin/bash
 echo `pwd`
-module load cray-hdf5/1.12.2.3
+module load cray-hdf5
 
 source ./input.txt
 true=True 

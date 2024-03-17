@@ -19,7 +19,7 @@ def uniform(normDiff, currbase, lower_bound, upper_bound, numRows):
 # Returns complete matrix of parsed csv and also a row vector (1 x 12) of base values for each param.
 def parse_csv(file_name):
     func_names = ['Uniform'] # We are now using Uniform only
-    with open(file_name, 'rt') as csvfile:
+    with open(file_name, 'r') as csvfile:
         reader = csv.reader(csvfile)
         numCols = len(next(reader)) # changed this line from reader.next() for python3
         numRows = sum(1 for row in reader) + 1

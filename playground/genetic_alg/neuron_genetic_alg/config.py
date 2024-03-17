@@ -62,7 +62,7 @@ if log_transform_params and starting_pop_hack:
 print('log_transform_params: ', log_transform_params)
 print('starting_pop_hack: ', starting_pop_hack)
 # starting_pop_hack = None
-passive_scaler = 0
+passive_scaler = 2
 # constant to scale passsive scores by
 if passive:
     PASSIVE_PERCTENAGE  = 1
