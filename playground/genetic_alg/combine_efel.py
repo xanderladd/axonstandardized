@@ -1,8 +1,5 @@
 import pickle
 import os
-os.chdir('neuron_genetic_alg')
-from config import *
-os.chdir('../')
 import cfg
 
 prefix ='efel_data/subsets'

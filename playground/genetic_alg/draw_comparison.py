@@ -6,9 +6,6 @@ import h5py
 import os
 from matplotlib.backends.backend_pdf import PdfPages
 import pickle as pkl
-os.chdir('neuron_genetic_alg')
-from config import *
-os.chdir('../')
 import cfg
 
 if not os.path.isfile('compare_response2.hdf5'):
