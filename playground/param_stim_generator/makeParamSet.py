@@ -88,7 +88,7 @@ for best, lb, ub, name in zip(orig.reshape(-1,1), data[:,1], data[:,2], ch_names
     else:
         print(count, "name :", name, " | best: ", np.round(best,9) , " | lb: ", np.round(lb,8), " | ub: ", np.round(ub,8))
     print("------------------------------------------------------------")
-    if name == 'e_pas_all':
+    if 'e_pas' in name:
         data[count,:3] = - np.abs(data[count,:3])
         print("turned {} negative".format(name) )
         orig[:,count] =  - np.abs(orig[:,count])

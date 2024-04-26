@@ -64,9 +64,9 @@ for stim_ind in range(len(config.curr_stim_name_list)):
         curr_stim_name = config.curr_stim_name_list[stim_ind]
         print("Currently working on stim " + curr_stim_name + " and params " + str(param_ind+1) + " of " + str(n))
         params_data = config.params_hdf5[params_name][param_ind]
-        if config.neg_index:
-            params_data[config.neg_index] =  - np.abs(params_data[config.neg_index])
-            
+        if len(config.neg_idxs):
+            for neg_idx in config.neg_idxs:
+                params_data[neg_idx] =  - np.abs(params_data[neg_idx])
         volts_at_i = run_model(params_data, curr_stim_name, config.dt)
         result_key = (params_name, param_ind, stim_ind)
         results[result_key] = volts_at_i

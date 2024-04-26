@@ -38,7 +38,8 @@ with open('../../../input.txt', 'r') as f:
 if 'compare' in model and 'bbp' in model:
     print("******TURNING E PAS NEGATIVE HACK*******")
     if "2" in param_opt_inds:
-        neg_index = 1
+        neg_idxs = [1]
+    
     neuron_path = 'neuron_files/compare_bbp'
     run_file = 'neuron_files/compare_bbp/run_model_cori.hoc'
 elif model == 'bbp':
@@ -52,8 +53,7 @@ elif model == 'M1_TTPC_NA_HH':
     run_file = None
     print("******TURNING E PAS NEGATIVE HACK*******")
     if "20" in param_opt_inds:
-        neg_index = 19
-
+        neg_idxs = [23, 24]
 
     
 os.chdir(neuron_path)	
