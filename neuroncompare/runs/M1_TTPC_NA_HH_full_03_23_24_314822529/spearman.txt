@@ -1,1 +1,0 @@
-Testing Spearman: -1.0Ground Truth Spearman: -1.0Training Spearman: nan

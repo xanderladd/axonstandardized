@@ -1,8 +1,0 @@
-#!/bin/bash
-
-#SBATCH --qos=regular
-#SBATCH --time=5:00:00
-#SBATCH --nodes=1
-#SBATCH --constraint=cpu
-
-sh compare_models.sh

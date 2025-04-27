@@ -1,6 +1,0 @@
-
-Passive fit
-===========
-- gK_Pstbar_K_Pst_axonal
-- g_pas
-- Ih
