@@ -1,8 +1,9 @@
 1. reconcile dynamic routing for 3 (4?) pipelines that can run
-    - shell
-    - slurm
-    - salloc
+    - shell (1st)]   
+    - salloc (2nd)
+    - slurm (3rd)
     - smoke test?
+2. ONLY USE ONE DAMN CONFIG
 2. run all of them
 3. docstrings
 4. Notebok example

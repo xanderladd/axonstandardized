@@ -21,7 +21,6 @@ mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'slurm'
 mkdir -p runs/${model}_${peeling}_${runDate}_${custom}/'stims'
 
 
-
 if [ ${ingestCell} == ${true} ]
   then
     python -m neuroncompare.src.cell_ingest pull  --cell_id ${modelNum}  
@@ -32,7 +31,7 @@ if [ ${makeStims} == ${true} ]
     python -m neuroncompare.src.cell_ingest assemble  --model  ${modelNum}  --pdf --force --timestep ${timesteps}
 fi
 
-sh shell_scripts/check_files.sh ${modelNum} ${passive} ${data_dir}
+sh scripts/shell_scripts/check_files.sh ${modelNum} ${passive} ${data_dir}
 
 
 if [ $? != 0 ];
@@ -74,12 +73,12 @@ cp run_remainder.sh ${wrkDir}
 # config stuff
 launch_cmd="sh"
 launch_ext=".sh"
-launch_dir="shell_scripts"
+launch_dir="scripts/shell_scripts"
 prefix="shell"
 if [ "${sbatch}" = "${true}" ]; then
     launch_cmd="sbatch"
     launch_ext=".slr"
-    launch_dir="slurm"
+    launch_dir="scripts/slurm"
     prefix='sbatch'
     module load cray-hdf5
     # set sandbox array parameters in score_sandbox and volt_sandbox

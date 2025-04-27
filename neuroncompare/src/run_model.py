@@ -1,7 +1,10 @@
 import numpy as np
 import os
 from neuroncompare.src.hoc_utils import decode_list, retrieve_dt
-import neuroncompare.src.optim_config as config
+try:
+    import neuroncompare.src.run_stim_config as config
+except:
+    import neuroncompare.src.optim_config as config
 
 os.chdir(config.neuron_path) 
 from neuron import h

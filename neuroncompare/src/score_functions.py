@@ -2,9 +2,12 @@ import numpy as np
 import math
 import efel
 try:
-    import neuroncompare.src.score_config as config
+    import neuroncompare.src.run_stim_config as config
 except:
-    import neuroncompare.src.optim_config as config
+    try:
+        import neuroncompare.src.score_config as config
+    except:
+        import neuroncompare.src.optim_config as config
 import pickle
 from mpi4py import MPI
 import math

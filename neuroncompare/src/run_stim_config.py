@@ -75,6 +75,7 @@ else:
 curr_stim_name_list.reverse()
 # why was this here???
 # curr_stim_name_list = curr_stim_name_list[:1]
+ntimestep = int(inputs['timesteps'])
 print(inputs['timesteps'])
 print("params names list",params_name_list)
 print("stim name list", curr_stim_name_list)
