@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#SBATCH -q regular
+#SBATCH -N 1
+#SBATCH -t 00:30:00
+#SBATCH -C cpu
+#SBATCH -L SCRATCH
+
+
+
+
+true=True
+source ./input.txt
+
+echo running analyze p parallel
+export OMP_NUM_THREADS=1
+srcDir=`pwd`
+
+
+if [[ $srcDir == *"runs"* ]]; then
+    wrkDir=${srcDir}
+else
+    wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}
+fi
+
+mkdir ${wrkDir}/'genetic_alg'
+echo 'my wrkDir='${wrkDir}
+
+dirToRun="genetic_alg"
+mkdir ${wrkDir}/${dirToRun}
+mkdir ${wrkDir}/${dirToRun}/objectives
+mkdir ${wrkDir}/${dirToRun}/optimization_results
+
+
+
+if [ ${allenOpt} == ${true} ]
+  then
+    python analyze_p_bbp_full/stim_selector.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}  
+elif [ ${makeOpt} == ${true} ]
+  then
+    srun -n 64 python -m neuroncompare.src.analyze_p_parallel --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}
+  fi
+  
+
+
+

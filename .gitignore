@@ -26,4 +26,5 @@ pipeline_extraction*
 **/archive/**
 *.nwb
 **/*.nwb
-
+playground/runs/*
+neuroncompare.egg-info
