@@ -3,7 +3,7 @@ import h5py
 import os, sys
 import math
 import copy
-import neuroncompare.src.run_stim_config as config
+## HOW DOES CONFIG COME IN HERE?? CWD: '/pscratch/sd/z/zladd/axonstandardized_v2/neuroncompare/neuroncompare/runs/M1_TTPC_NA_HH_full_03_23_24_314822529/volts_sand/0-0'
 from neuroncompare.src.run_model import run_model
 from mpi4py import MPI
 

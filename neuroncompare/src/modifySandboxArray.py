@@ -15,8 +15,8 @@ def main():
     num_nodes = int(sys.argv[2])
     len_of_trials = len(str(num_trials))
     dirpath = os.path.dirname(os.path.abspath(__file__))
-    volt_sandbox = os.path.join(dirpath, "../slurm/sbatch_run.slr")
-    score_sandbox = os.path.join(dirpath, "../slurm/sbatch_score.slr")
+    volt_sandbox = os.path.join(dirpath, "../scripts/slurm/sbatch_run.slr")
+    score_sandbox = os.path.join(dirpath, "../scripts/slurm/sbatch_score.slr")
 
     textToSearch = '#SBATCH --array 1-'
     if num_trials != 0:

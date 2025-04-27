@@ -1,6 +1,8 @@
 import numpy as np
 import os
 from neuroncompare.src.hoc_utils import decode_list, retrieve_dt
+
+# ## HOW DOES CONFIG COME IN HERE?? CWD: varies
 try:
     import neuroncompare.src.run_stim_config as config
 except:

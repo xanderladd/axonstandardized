@@ -5,6 +5,16 @@ import os
 import sys
 
 # Helper functions (originally from makeParamSetHelpers.py)
+# Patch for neuroncompare/src/make_params.py
+# Add at the beginning of the script, before the main code
+
+import argparse
+
+# Add argument parsing
+parser = argparse.ArgumentParser(description='Generate parameters for neuroncompare')
+parser.add_argument('--auto-confirm', action='store_true', 
+                   help='Automatically confirm parameter generation without prompting')
+args = parser.parse_args()
 
 # Uniform function for sampling
 def uniform(normDiff, currbase, lower_bound, upper_bound, numRows):
@@ -182,15 +192,20 @@ def calculate_pmatx_dx(data, augmented):
     return pMatx
 
 
+
+# Then modify the user confirmation check (find the section that looks like this)
 if __name__ == "__main__":
-    test_text = input("Are you SURE you want to create a new param set \
-    (only do this if you are at the start of a peeling step) (y/n) :  ")
-    while test_text != "y" and test_text != "n":
-        test_text = input("please type 'y' or 'n' :  ")
-        
-    if test_text == "n":
-        sys.exit(0)
-    
+    if not args.auto_confirm:
+        test_text = input("Are you SURE you want to create a new param set \
+        (only do this if you are at the start of a peeling step) (y/n) :  ")
+        while test_text != "y" and test_text != "n":
+            test_text = input("please type 'y' or 'n' :  ")
+            
+        if test_text == "n":
+            sys.exit(0)
+    else:
+        print("Auto-confirming parameter generation")
+ 
     FILEPATH = 'input.txt'
     
     input_file = open(FILEPATH, "r")

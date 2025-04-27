@@ -3,7 +3,8 @@ import math
 import numpy as np
 import h5py
 import neuroncompare.src.score_functions as sf
-import neuroncompare.src.optim_config as config
+from neuroncompare.src.config_manager import get_config
+confg = get_config()
 
 def get_param_bounds(params_csv, params_opt_ind):
     param_df = pd.read_csv(params_csv)
