@@ -194,7 +194,6 @@ class ExecutionManager:
                 command = f"sbatch {script_path} {args_str}"
             else:
                 command = f"sh {script_path} {args_str}"
-                
             return self.execute_command(command, wait, work_dir, interactive)
         
         # For other cases, try to determine the best approach

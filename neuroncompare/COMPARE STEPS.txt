@@ -1,14 +1,10 @@
-1. reconcile dynamic routing for 3 (4?) pipelines that can run
-    - shell (1st)]   
-    - salloc (2nd)
-    - slurm (3rd)
-    - smoke test?
-2. ONLY USE ONE DAMN CONFIG
-2. run all of them
+1. finish interactive run (scores -> GA -> compare, but run eveyrthing and try to figure out throttling for srun)
+2. sbatch version
 3. docstrings
 4. Notebok example
 
-
+MUST FIX:
+    hotfixes for missing scores
 
 left over
     - config sometimes accessed as dict and sometimes as object

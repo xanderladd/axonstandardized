@@ -376,7 +376,8 @@ for k in range(len(volts_name_list)):
             nan_mask = (~np.isfinite(pin_scores)) | (np.isnan(pin_scores))  
             if not  np.sum(nan_mask) > 0:
                 print(f"WARNING: {curr_function_name} failed to produce non na scores")
-                score_function_names.remove(curr_function_name)
+                if curr_function_name in score_function_names:
+                    score_function_names.remove(curr_function_name)
                 continue         
             pin_scores = np.where(nan_mask, np.nanmax(pin_scores[~nan_mask]), pin_scores)
             mm_scaler = MinMaxScaler()

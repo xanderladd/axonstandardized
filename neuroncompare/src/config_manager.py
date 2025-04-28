@@ -255,10 +255,12 @@ class ConfigManager:
         # Negative parameter indices (for e_pas)
         
         self.negative_param_inds = []
-        for idx, param in enumerate(pd.read_csv(self.params_csv).to_dict(orient='records')):
-            if 'e_pas' in param['Param name']:
-                self.negative_param_inds.append(idx)
-        
+        try:
+            for idx, param in enumerate(pd.read_csv(self.params_csv).to_dict(orient='records')):
+                if 'e_pas' in param['Param name']:
+                    self.negative_param_inds.append(idx)
+        except FileNotFoundError:
+            print("failed to find params, they probably haven't been made yet")
         # Additional stims
         if 'added_stims' in self.config:
             self.added_stims = [elem.encode('ASCII') for elem in self.config['added_stims'].split(',')]

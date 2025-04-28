@@ -30,7 +30,6 @@ then
     SLURM_ARRAY_TASK_ID=0
 fi
 
-
 srcDir=runs/${model}_${peeling}_${runDate}_${custom}
 coreN=${srcDir}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=${SLURM_ARRAY_TASK_ID}
@@ -38,10 +37,13 @@ wrkDir=${coreN}-${arrIdx}
 echo 'my wrkDir='${wrkDir}
 mkdir -p ${wrkDir}
 
-cp -rp volts_sandbox/run_volts ${wrkDir}/run_volts
-cd ${wrkDir}/"run_volts"
-cd neuron_files/${model}/
+cp -rp ${base_dir}/cell_models ${wrkDir}/cell_models
+cd ${wrkDir}/"cell_models"
+cd ${model}
+rm -rf x86_64
 nrnivmodl 
+nrnivmodl mechanisms
+
 cd ../../
 
 export OMP_NUM_THREADS=1
@@ -50,7 +52,7 @@ export OMP_NUM_THREADS=1
 
 echo 'about to run run_stim_hdf5.py'
 echo 'current dir: ' `pwd`
-srun -n 64 python run_stim_hdf5.py $arrIdx ${peeling} > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
+srun -n 64  python -m neuroncompare.src.run_stim_hdf5 $arrIdx ${peeling} #> SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
 
 # mv slurm log to final destination - it is alwasy a job-array
 echo slurm left at:

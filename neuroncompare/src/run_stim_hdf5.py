@@ -41,8 +41,8 @@ if __name__ == "__main__":
 
     if i == 0 and config['num_nodes'] == 1:
         curr_stim_name_list = stims_name_list
-    elif config.num_nodes > 1 and config.num_volts == 0:
-        num_stims_to_run = math.ceil(len(stims_name_list) / config.num_nodes)
+    elif config.config['num_nodes'] > 1 and config.config['num_volts'] == 0:
+        num_stims_to_run = math.ceil(len(stims_name_list) / config.config['num_nodes'] )
         curr_stim_name_list = stims_name_list[(i-1)*num_stims_to_run:(i)*num_stims_to_run]
         print(len(curr_stim_name_list))
     else:

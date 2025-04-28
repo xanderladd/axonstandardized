@@ -162,7 +162,12 @@ class Pipeline:
             return True
             
         self.logger.info("Starting voltage generation")
-
+        
+        param_dir = os.path.join(self.config['data_dir'], "params")
+        target_param_dir = os.path.join(self.path_manager.get_run_dir(), "params")
+        os.makedirs(target_param_dir, exist_ok=True)
+        # Copy ga_dir directory
+        self.copy_directory(param_dir, target_param_dir)
         success = self.execution_manager.execute_pipeline_stage('volts')
             
         if not success:
