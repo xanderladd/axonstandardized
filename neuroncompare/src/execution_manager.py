@@ -19,16 +19,18 @@ class ExecutionManager:
         'volts': True,
         'scores': True,
         'opt': True,
-        'runGA': True,
+        'genetic_algorithm': True,
         'check_files': True,
         'hack_interactive': True, 
         'volts_scores': True,
+        "compare_models": True
     }
     
     # Scripts that are always Python modules
     PYTHON_MODULES = {
         'make_params': 'neuroncompare.src.make_params',
         'cell_ingest': 'neuroncompare.src.cell_ingest',
+        'analyze_p_parallel': 'neuroncompare.src.analyze_p_parallel',
         'analyze_p_multistims': 'neuroncompare.src.analyze_p_multistims',
         'modifySandboxArray': 'neuroncompare.src.modifySandboxArray',
     }
@@ -37,7 +39,9 @@ class ExecutionManager:
     INTERACTIVE_SCRIPTS = {
         'make_params': True,
         'volts': True,
-        'scores': True
+        'scores': True,
+        'genetic_algorithm': True,
+
     }
     
     def __init__(self):
@@ -52,7 +56,7 @@ class ExecutionManager:
         self.shell = self.config.get('shell', True)
     
     def execute_command(self, command: str, wait: bool = True, 
-                       cwd: Optional[str] = None, 
+                       work_dir: Optional[str] = None, 
                        interactive: bool = False) -> Tuple[int, str, str]:
         """
         Execute a shell command.
@@ -60,7 +64,7 @@ class ExecutionManager:
         Args:
             command: Command to execute
             wait: If True, wait for command to complete
-            cwd: Working directory for command execution
+            work_dir: Working directory for command execution
             interactive: If True, allow command to interact with user
             
         Returns:
@@ -70,12 +74,11 @@ class ExecutionManager:
         
         try:
             if interactive:
-                print(f"HIIII {command} ")
                 # For interactive scripts, don't capture stdout/stderr
                 process = subprocess.Popen(
                     command,
                     shell=True,
-                    cwd=cwd
+                    cwd=work_dir
                 )
                 
                 if wait:
@@ -99,7 +102,7 @@ class ExecutionManager:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     universal_newlines=True,
-                    cwd=cwd
+                    cwd=work_dir
                 )
                 
                 if wait:
@@ -122,7 +125,7 @@ class ExecutionManager:
     
     def execute_python_module(self, module_path: str, args: List[str] = None, 
                          parallel: bool = False, wait: bool = True,
-                         cwd: Optional[str] = None,
+                         work_dir: Optional[str] = None,
                          interactive: bool = False) -> Tuple[int, str, str]:
         """
         Execute a Python module.
@@ -132,7 +135,7 @@ class ExecutionManager:
             args: List of arguments to pass to the module (preserving order)
             parallel: If True, execute using srun if configured
             wait: If True, wait for command to complete
-            cwd: Working directory for command execution
+            work_dir: Working directory for command execution
             interactive: If True, allow module to interact with user
             
         Returns:
@@ -145,11 +148,11 @@ class ExecutionManager:
         else:
             command = f"python -m {module_path} {args_str}"
         
-        return self.execute_command(command, wait, cwd, interactive)
+        return self.execute_command(command, wait, work_dir, interactive)
 
     
     def execute_stage(self, stage_name: str, args: List[str] = None, 
-                 wait: bool = True, cwd: Optional[str] = None) -> Tuple[int, str, str]:
+                 wait: bool = True, work_dir: Optional[str] = None) -> Tuple[int, str, str]:
         """
         Execute a pipeline stage by name, determining the appropriate execution method.
         
@@ -179,7 +182,7 @@ class ExecutionManager:
                 module_path, 
                 args_list, 
                 wait=wait, 
-                cwd=cwd, 
+                work_dir=work_dir, 
                 interactive=interactive
             )
     
@@ -192,7 +195,7 @@ class ExecutionManager:
             else:
                 command = f"sh {script_path} {args_str}"
                 
-            return self.execute_command(command, wait, cwd, interactive)
+            return self.execute_command(command, wait, work_dir, interactive)
         
         # For other cases, try to determine the best approach
         else:
@@ -224,12 +227,12 @@ class ExecutionManager:
                 module_path, 
                 dict_args, 
                 wait=wait, 
-                cwd=cwd, 
+                work_dir=work_dir, 
                 interactive=interactive
             )
     
     def execute_pipeline_stage(self, stage_name: str, args: List[str] = None, 
-                              wait: bool = True) -> bool:
+                              wait: bool = True, work_dir: str = None) -> bool:
         """
         Execute a pipeline stage with logging.
         
@@ -250,8 +253,13 @@ class ExecutionManager:
             stage_logger.info(f"Stage arguments: {args_str}")
         
         try:
+            if work_dir:
+                cwd = os.getcwd()
+                os.chdir(work_dir)
             return_code, stdout, stderr = self.execute_stage(stage_name, args, wait)
             
+            if work_dir:
+                os.chdir(cwd)
             success = return_code == 0
             stage_logger.log_stage_end(stage_name, success=success)
             

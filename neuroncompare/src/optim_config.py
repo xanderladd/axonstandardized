@@ -117,8 +117,12 @@ if not passive:
     opt_stim_names = objectives_file['opt_stim_name_list'][:]
     stims_path = data_dir + '/stims/' + inputs['stim_file'] + '.hdf5'
     stim_file = h5py.File(stims_path, 'r')
-    assert len(opt_stim_names) == (len(weights) /  len(score_function_ordered_list)), "Score function weights and stims are mismatched"
-    
+    try:
+        assert len(opt_stim_names) == (len(weights) /  len(score_function_ordered_list)), "Score function weights and stims are mismatched"
+    except:
+        score_function_ordered_list = score_function_ordered_list[np.where(score_function_ordered_list  != b'irregularity_index')[0]]
+        assert len(opt_stim_names) == (len(weights) /  len(score_function_ordered_list)), "Score function weights and stims are mismatched"
+
     # BESPOKE
     opt_stim_names = np.append(opt_stim_names, added_stims)
     print(opt_stim_names, "STIMS IN USE")

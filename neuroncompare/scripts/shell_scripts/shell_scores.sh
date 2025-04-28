@@ -27,7 +27,6 @@ wrkDir=${coreN}-${arrIdx}
 echo 'my wrkDir='${wrkDir}
 mkdir -p ${wrkDir}
 
-cp input.txt ${wrkDir}/${dirToRun}/
 cd ${wrkDir}/${dirToRun}
 export OMP_NUM_THREADS=1
 

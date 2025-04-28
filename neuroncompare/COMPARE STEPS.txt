@@ -7,3 +7,9 @@
 2. run all of them
 3. docstrings
 4. Notebok example
+
+
+
+left over
+    - config sometimes accessed as dict and sometimes as object
+    - hotfixes on GA 

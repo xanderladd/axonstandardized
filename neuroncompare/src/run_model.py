@@ -2,15 +2,17 @@ import numpy as np
 import os
 from neuroncompare.src.hoc_utils import decode_list, retrieve_dt
 
-# ## HOW DOES CONFIG COME IN HERE?? CWD: varies
-try:
-    import neuroncompare.src.run_stim_config as config
-except:
-    import neuroncompare.src.optim_config as config
-
+from neuroncompare.src.path_manager import get_path_manager
+from neuroncompare.src.config_manager import get_config
+config = get_config()
+# Log our working directory to help with debugging
+print(f"Working directory: {os.getcwd()}")
+cwd = os.getcwd()
 os.chdir(config.neuron_path) 
 from neuron import h
-os.chdir("../../")
+os.chdir(cwd)
+import math
+
 from neuroncompare.src.NeuronModelClass import NeuronModel
 
 
@@ -29,7 +31,7 @@ if 'bbp' in config.model:
     def run_model(param_set, stim_name_list, input_dt=None, start_Vm=None):
         h.load_file(config.run_file)
         volts_list = []
-        stims = h5py.File(config.stims_path, 'r')
+        stims = h5py.File(config.stims_file_path, 'r')
         for curr_stim_name in stim_name_list:
             total_params_num = len(param_set)
             curr_stim = stims[curr_stim_name][:]
@@ -115,7 +117,7 @@ elif config.model == 'M1_TTPC_NA_HH':
         # import pdb; pdb.set_trace()
 
         volts_list = []
-        stims = h5py.File(config.stims_path, 'r')
+        stims = h5py.File(config.stims_file_path, 'r')
         
         if type(stim_name_list) != list and type(stim_name_list) != np.ndarray:
             stim_name_list = [stim_name_list]

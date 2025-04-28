@@ -12,7 +12,10 @@ import math
 from sklearn.preprocessing import MinMaxScaler
 import pickle
 import re
-import neuroncompare.src.score_config as config
+# Import existing configuration utilities
+from neuroncompare.src.config_manager import get_config
+config = get_config()
+print(f"Working directory: {os.getcwd()}")
 
 def split(container, count):
     return [container[_i::count] for _i in range(count)]
@@ -37,16 +40,16 @@ def eval_function(target, data, function, dt):
 dt = config.dt
 max_score = 1000
 
-stim_file = h5py.File(f'{config.data_dir}/stims/{config.stim_file}.hdf5','r')
+stim_file = h5py.File(config.stims_file_path,'r')
 volts_name_list = sorted(os.listdir(config.volts_path))
 volts_name_list = [volt_name for volt_name in volts_name_list if "hdf5" in volt_name]
-params = h5py.File(config.params_path, 'r')
+params = h5py.File(config.params_file_path, 'r')
 
 num_volts_to_run = 1
 i=int(sys.argv[1])
-if i == 0 and config.num_nodes == 1:
+if i == 0 and config.config['num_nodes'] == 1:
     volts_name_list = volts_name_list
-elif config.num_nodes > 1 and config.num_volts == 0:
+elif config.config['num_nodes'] > 1 and config.config['num_volts'] == 0:
     num_volts_to_run = math.ceil(len(volts_name_list) / num_nodes)
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
 else:
@@ -271,6 +274,7 @@ else:
                         # 'inv_first_ISI'])
 score_functions = custom_score_functions + efel_score_functions
 COMM = MPI.COMM_WORLD
+
 print(COMM.size, "COM SIZE")
 for k in range(len(volts_name_list)):
     curr_volts_name = volts_name_list[k]
@@ -369,7 +373,11 @@ for k in range(len(volts_name_list)):
             # norm_pin_scores, transformation = sn.normalize(pin_scores)
             
             # if not finite (nan or inf) replace with finite max
-            nan_mask = (~np.isfinite(pin_scores)) | (np.isnan(pin_scores))            
+            nan_mask = (~np.isfinite(pin_scores)) | (np.isnan(pin_scores))  
+            if not  np.sum(nan_mask) > 0:
+                print(f"WARNING: {curr_function_name} failed to produce non na scores")
+                score_function_names.remove(curr_function_name)
+                continue         
             pin_scores = np.where(nan_mask, np.nanmax(pin_scores[~nan_mask]), pin_scores)
             mm_scaler = MinMaxScaler()
             

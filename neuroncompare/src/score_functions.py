@@ -1,18 +1,13 @@
 import numpy as np
 import math
 import efel
-try:
-    import neuroncompare.src.run_stim_config as config
-except:
-    try:
-        import neuroncompare.src.score_config as config
-    except:
-        import neuroncompare.src.optim_config as config
 import pickle
 from mpi4py import MPI
 import math
 import neuroncompare.src.score_functions as sf
 import os
+from neuroncompare.src.config_manager import get_config
+config = get_config()
 
 comm = MPI.COMM_WORLD
 global_rank = comm.Get_rank()

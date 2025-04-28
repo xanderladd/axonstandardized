@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#SBATCH --qos=regular
+#SBATCH --time=12:00:00
+#SBATCH --nodes=10
+#SBATCH --constraint=cpu
+
+
+cd ../
+source ../../input.txt
+echo running GA
+echo OFFSPRING_SIZE is ${OFFSPRING_SIZE}
+echo for ${MAX_NGEN} generations
+
+
+seed=$((10000 + $RANDOM % 100000))
+export BLUEPYOPT_SEED=${seed}
+
+
+echo seed: ${seed}
+export OMP_NUM_THREADS=1
+
+python -m neuroncompare.src.optimize_parameters_genetic_alg \
+    -vv                                \
+    --compile                          \
+    --offspring_size=1              \
+    --max_ngen=1                   \
+    --seed=${seed}                     \
+    --checkpoint ckpts/${seed}_ckpt      \
+    --start  #> GA_out${seed}.log  
+    

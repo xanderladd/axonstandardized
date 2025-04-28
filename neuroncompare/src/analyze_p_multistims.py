@@ -18,6 +18,7 @@ import h5py
 import neuroncompare.src.analyze_p_config as config
 import warnings
 import h5py
+from neuroncompare.src.path_manager import get_path_manager
 
 def construct_stim_score_function_list(scores_path):
     stim_list = []
@@ -303,7 +304,9 @@ if __name__ == "__main__":
     # they can be used by the utility script file
     # when it is run in the next section.
     print(os.getcwd())
-    with open("analyze_p_bbp_full/params.pkl", 'wb') as f:
+    run_dir = get_path_manager().get_run_dir()
+    
+    with open( os.path.join(run_dir,'analyze_p_bbp_full',"params.pkl" ), 'wb') as f:
         pickle.dump([
             scores_path,
             params_path,

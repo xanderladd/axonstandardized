@@ -165,12 +165,11 @@ class PathManager:
         # Special cases for scripts that don't follow the prefix naming convention
         special_scripts = {
             'check_files': 'scripts/shell_scripts/check_files.sh',
-            # Add other special cases here as needed
+            'genetic_algorithm': os.getcwd(),
+            "compare_models": os.getcwd()
+            # ^ these aren't really specical cases - fix if we add many more strages
+
         }
-        
-        if script_name in special_scripts:
-            script_path = special_scripts[script_name]
-            return self._ensure_absolute_path(script_path)
         
         # Default behavior for normal scripts
         if self.config.get('sbatch', False):
@@ -185,9 +184,15 @@ class PathManager:
             prefix = 'shell'
             extension = '.sh'
             scripts_dir = 'scripts/shell_scripts'
-        
-        script_path = os.path.join(scripts_dir, f"{prefix}_{script_name}{extension}")
-        return self._ensure_absolute_path(script_path)
+
+        if script_name in special_scripts:
+            script_path = special_scripts[script_name]
+            if script_name == 'genetic_algorithm' or script_name == "compare_models":
+                script_path = os.path.join(script_path,f"{prefix}_{script_name}{extension}")
+            return self._ensure_absolute_path(script_path)
+        else:
+            script_path = os.path.join(scripts_dir, f"{prefix}_{script_name}{extension}")
+            return self._ensure_absolute_path(script_path)
 
 # Global instance for singleton-like access
 _path_manager_instance = None

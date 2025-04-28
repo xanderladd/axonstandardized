@@ -4,12 +4,18 @@ import os
 import bluepyopt as bpop
 import pandas as pd
 from mpi4py import MPI
-import hoc_utils
+import neuroncompare.src.hoc_utils as hoc_utils
 import neuroncompare.src.run_model as run_model
-import  neuroncompare.src.optim_config as config
+# Import existing configuration utilities
+from neuroncompare.src.path_manager import get_path_manager
+from neuroncompare.src.config_manager import get_config
+config = get_config()
+# Log our working directory to help with debugging
+print(f"Working directory: {os.getcwd()}")
+cwd = os.getcwd()
 os.chdir(config.neuron_path) 
 from neuron import h
-os.chdir("../../")
+os.chdir(cwd)
 import math
 
 comm = MPI.COMM_WORLD
@@ -18,6 +24,47 @@ size = comm.Get_size()
 
 global GEN
 GEN = 0
+global target_volts
+target_volts = None
+
+if not config.config['passive']:
+    objectives_file = h5py.File(config.objectives_file, 'r')
+    score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
+    weights = objectives_file['opt_weight_list'][:]
+    opt_stim_names = objectives_file['opt_stim_name_list'][:]
+    stims_path = config['data_dir'] + '/stims/' + config.config['stim_file'] + '.hdf5'
+    stim_file = h5py.File(stims_path, 'r')
+    try:
+        assert len(opt_stim_names) == (len(weights) /  len(score_function_ordered_list)), "Score function weights and stims are mismatched"
+    except:
+        score_function_ordered_list = score_function_ordered_list[np.where(score_function_ordered_list  != b'irregularity_index')[0]]
+        assert len(opt_stim_names) == (len(weights) /  len(score_function_ordered_list)), "Score function weights and stims are mismatched"
+    # BESPOKE
+    opt_stim_names = np.append(opt_stim_names, config['added_stims'])
+    print(opt_stim_names, "STIMS IN USE")
+    if os.path.isfile(config.target_volts_path):
+        print('found allen target volts')
+        target_volts = h5py.File(config.target_volts_path,'r')
+        target_volts = [target_volts[elem] for elem in opt_stim_names]
+    elif os.path.isfile(config.target_volts_path_2):
+        print('found allen target volts')
+        target_volts = h5py.File(target_volts_path_2,'r')
+        target_volts = [target_volts[elem] for elem in opt_stim_names]
+    else:
+        target_volts = None
+        
+    ap_tune_stim_name = '18'
+else:
+    objectives_file = h5py.File(f'../../objectives/allen{model_num}_objectives_passive.hdf5', 'r')
+    opt_weight_list = objectives_file['opt_weight_list'][:]
+    opt_stim_names = objectives_file['opt_stim_name_list'][:]
+    score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
+    stims_path = data_dir + 'stims/' + inputs['stim_file'] + '_passive.hdf5'
+    stim_file = h5py.File(stims_path, 'r')
+    weights = []
+    scores_path = '../../scores/'
+    target_volts_path = '../../target_volts/target_volts_{}_passive.hdf5'.format(inputs['modelNum'])
+    target_volts_hdf5 = h5py.File(target_volts_path, 'r')
 
 
 class hoc_evaluator(bpop.evaluators.Evaluator):
@@ -37,12 +84,13 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.target_volts = self.generate_target_volts()
     
     def generate_target_volts(self):
-        
-        if config.target_volts:
-            return config.target_volts
+        global target_volts
+
+        if target_volts:
+            return target_volts
         
         if not os.path.isfile('target_volts.npy'):
-            target_volts = run_model.run_model(self.orig_params, config.opt_stim_names)
+            target_volts = run_model.run_model(self.orig_params, opt_stim_names)
             np.save('target_volts.npy', target_volts)
         else:
             target_volts = np.load('target_volts.npy')
@@ -96,10 +144,15 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         while curr_rank < len(param_values):
             start_Vm = self.target_volts[0][0]
             curr_params = self.assign_params(param_values[curr_rank])
-            simulated_volts = run_model.run_model(curr_params, config.opt_stim_names, config.dt, start_Vm=start_Vm)
+            simulated_volts = run_model.run_model(curr_params, opt_stim_names, config.dt, start_Vm=start_Vm)
             
-            curr_score = hoc_utils.evaluate_score_function(config.opt_stim_names, self.target_volts, simulated_volts, config.weights)
-            curr_score = curr_score[0]
+            curr_score = hoc_utils.evaluate_score_function(opt_stim_names, self.target_volts, simulated_volts, weights)
+            # weird hotfix, mpi4py return type incosistent for offspring size == 1?
+            try:
+                curr_score = curr_score[0]
+            except IndexError:
+                pass
+
             
             scores.append(curr_score)
             ranks.append(curr_rank)

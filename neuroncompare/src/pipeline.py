@@ -18,6 +18,9 @@ class Pipeline:
     
     def __init__(self):
         """Initialize the Pipeline."""
+        self.root_dir = os.getcwd()
+        os.environ['NEURON_COMPARE_ROOT'] = self.root_dir
+        assert os.path.isfile(os.path.join( self.root_dir, 'input.txt')), "must launch from a path with input.txt in the root dir"
         self.config = get_config()
         self.path_manager = get_path_manager()
         self.logger = get_logger()
@@ -164,7 +167,9 @@ class Pipeline:
             
         if not success:
             return False
-            
+        return True
+
+    def wait_for_volts(self) -> bool:
         # Wait for voltage files if configured
         if self.config.get('wait4volts', False):
             self.logger.info("Waiting for voltage files")
@@ -226,21 +231,20 @@ class Pipeline:
             ga_dir = os.path.join(run_dir, "genetic_alg")
             os.makedirs(ga_dir, exist_ok=True)
             
-            # Copy neuron_genetic_alg directory
-            neuron_ga_dir = os.path.join(ga_dir, "neuron_genetic_alg")
-            os.makedirs(neuron_ga_dir, exist_ok=True)
-            source_neuron_ga_dir = os.path.join(self.path_manager.base_dir, "genetic_alg/neuron_genetic_alg")
-            self.copy_directory(source_neuron_ga_dir, neuron_ga_dir)
+            # Copy ga_dir directory
+            source_neuron_ga_dir = os.path.join(self.path_manager.base_dir, "genetic_alg")
+            self.copy_directory(source_neuron_ga_dir, ga_dir)
             
+            # Copy models into neuron_genetic_alg directory
+            source_cell_dir = os.path.join(self.path_manager.base_dir, "cell_models")
+            dest_cell_dir = os.path.join(ga_dir,"genetic_alg","cell_models")
+            os.makedirs(dest_cell_dir, exist_ok=True)
+            self.copy_directory(source_cell_dir, dest_cell_dir)
+            
+
             # Create directories for results
             os.makedirs(os.path.join(ga_dir, "optimization_results"), exist_ok=True)
             os.makedirs(os.path.join(ga_dir, "objectives"), exist_ok=True)
-            
-            # Copy analyze_p_bbp_full directory
-            analyze_dir = os.path.join(run_dir, "analyze_p_bbp_full")
-            os.makedirs(analyze_dir, exist_ok=True)
-            source_analyze_dir = os.path.join(self.path_manager.base_dir, "analyze_p_bbp_full")
-            self.copy_directory(source_analyze_dir, analyze_dir)
             
             self.logger.info("Genetic algorithm directories set up")
             return True
@@ -266,9 +270,12 @@ class Pipeline:
         run_dir = self.path_manager.get_run_dir()
         
         success = self.execution_manager.execute_pipeline_stage(
-            'analyze_p_bbp_full/analyze_p',
-            [],
-            cwd=run_dir
+            'analyze_p_parallel',
+            [f"--model={self.config['model']}",
+             f"--peeling={self.config['peeling']}",
+             f"--CURRENTDATE={self.config['runDate']}",
+             f"--custom={self.config.get('custom', '')}"],
+            work_dir=run_dir
         )
             
         if not success:
@@ -304,14 +311,14 @@ class Pipeline:
         
         # Change to run directory for objective generation
         run_dir = self.path_manager.get_run_dir()
-        
+        os.makedirs(os.path.join(run_dir,'analyze_p_bbp_full'), exist_ok=True)
         return self.execution_manager.execute_pipeline_stage(
             'analyze_p_multistims',
             [f"--model={self.config['model']}",
              f"--peeling={self.config['peeling']}",
              f"--CURRENTDATE={self.config['runDate']}",
              f"--custom={self.config.get('custom', '')}"],
-            cwd=run_dir
+            work_dir=run_dir
         )
     
     def run_ga(self) -> bool:
@@ -330,18 +337,32 @@ class Pipeline:
         # Change to the appropriate directory for GA
         ga_dir = os.path.join(self.path_manager.get_run_dir(), "genetic_alg/neuron_genetic_alg/slurm_scripts")
         
-        if self.config.get('gaGPU', False):
-            self.logger.info("Using GPU for genetic algorithm")
-            return self.execution_manager.execute_pipeline_stage(
-                'BigGaGPU', 
+        return self.execution_manager.execute_pipeline_stage(
+                'genetic_algorithm', 
                 [],
-                cwd=ga_dir
+                work_dir=ga_dir
             )
-        else:
-            return self.execution_manager.execute_pipeline_stage(
-                'runGA_allen_perl', 
+
+    def compare_models(self) -> bool:
+        """
+        Run genetic algorithm.
+        
+        Returns:
+            True if successful or not configured, False otherwise
+        """
+        if not self.config.get('compare_models', False):
+            self.logger.info(" compare cells (not configured)")
+            return True
+            
+        self.logger.info("Starting compare cells")
+        
+        # Change to the appropriate directory for GA
+        ga_dir = os.path.join(self.path_manager.get_run_dir(), "genetic_alg")
+        
+        return self.execution_manager.execute_pipeline_stage(
+                'compare_models', 
                 [],
-                cwd=ga_dir
+                work_dir=ga_dir
             )
     
     def copy_directory(self, src: str, dst: str) -> None:
@@ -388,11 +409,14 @@ class Pipeline:
             ("Parameter Generation", self.make_params),
             ("Sandbox Configuration", self.modify_sandbox_array),
             ("Voltage Generation", self.make_volts),
+            ("Wait for Volts", self.wait_for_volts),
             ("Score Calculation", self.make_scores),
             ("Genetic Algorithm Setup", self.setup_genetic_alg),
             ("Optimization", self.make_opt),
             ("Objective Generation", self.make_obj),
-            ("Genetic Algorithm", self.run_ga)
+            ("Genetic Algorithm", self.run_ga),
+            ("Run Comparision", self.compare_models)
+
         ]
         
         for stage_name, stage_func in pipeline_stages:

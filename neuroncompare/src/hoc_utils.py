@@ -4,7 +4,7 @@ import numpy as np
 import h5py
 import neuroncompare.src.score_functions as sf
 from neuroncompare.src.config_manager import get_config
-confg = get_config()
+config = get_config()
 
 def get_param_bounds(params_csv, params_opt_ind):
     param_df = pd.read_csv(params_csv)
@@ -42,7 +42,10 @@ def decode_list(stim_name_list):
     res = []
     for stim_name in stim_name_list:
         if type(stim_name) != str:
-            stim_name = stim_name.decode('ASCII')
+            try:
+                stim_name = stim_name.decode('ASCII')
+            except:
+                stime_name = str(stim_name) # annyoing string conversion thing I hot fixed
         res.append(stim_name)
     return res
     
@@ -81,7 +84,7 @@ def retrieve_dt(curr_stim_name, stims_hdf5, dt=None):
 
 def evaluate_score_function(stim_names, target_volts, data_volts, weights, dt=None):
     stim_names = decode_list(stim_names)
-    stims_hdf5 = h5py.File(config.stims_path, 'r')
+    stims_hdf5 = h5py.File(config.stims_file_path, 'r')
     # start all scores at 0
     total_score, psv_scores, actv_scores= 0, 0, 0
     
