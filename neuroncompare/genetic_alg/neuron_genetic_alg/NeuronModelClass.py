@@ -261,7 +261,8 @@ class NeuronModel:
                 seg.g_pas = params[20]
 
         h.soma_Ih = params[25]
-        h.dend_Ih = params[26]
+        #  set dend same as soma since it will use distance to calc 
+        h.dend_Ih = params[25]
 
         h.working()
         

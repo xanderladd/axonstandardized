@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cp -r neuron_genetic_alg/neuron_files neuron_genetic_alg/cell_models
+
+
 python set_compare_v_init.py
 
 python pull_allen_model.py

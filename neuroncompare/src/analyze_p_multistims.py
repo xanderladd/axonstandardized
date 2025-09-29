@@ -42,6 +42,7 @@ def construct_score_sensitivity_dict(ordered_stim_list, ordered_score_function_l
             pin_len = len(curr_pin_score)
             curr_pin_list.append(curr_pin_score)
         pin_score_dict[stim] = curr_pin_list
+
     return pin_score_dict
 
 # Returns an objective for the optimization problem.
@@ -92,7 +93,6 @@ def optimize(stim_name_list, subset_list=None, min_bound = 0, max_bound = 100):
     np.random.seed(0)
     initial_guess = np.array([np.random.random_sample()*100 for _ in range(optimizer_len)])
     obj = construct_objective(score_mat)
-
     return minimizeCompass(obj, bounds=bound, x0=initial_guess, deltainit = 100, deltatol=0.01, paired=False), score_mat, obj
     #return minimize(obj, bounds=bound, x0=initial_guess), score_mat, obj
 
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     # when it is run in the next section.
     print(os.getcwd())
     run_dir = get_path_manager().get_run_dir()
-    
+    os.makedirs(os.path.join(run_dir, 'analyze_p_bbp_full'), exist_ok=True)
     with open( os.path.join(run_dir,'analyze_p_bbp_full',"params.pkl" ), 'wb') as f:
         pickle.dump([
             scores_path,
@@ -317,7 +317,7 @@ if __name__ == "__main__":
     
     try:
         ordered_stim_list, ordered_score_function_list = construct_stim_score_function_list(scores_path)
-        ordered_score_function_list.remove("irregularity_index")
+        # ordered_score_function_list.remove("irregularity_index")
         pin_score_dict = construct_score_sensitivity_dict(ordered_stim_list, ordered_score_function_list)
     
     except FileNotFoundError:
@@ -325,6 +325,7 @@ if __name__ == "__main__":
             RuntimeWarning)
         
     stimsInOrder = [e.decode('ascii') for e in opt_file['stims_optimal_order'][:]]
+
     if False: #len(config.opt_stims):
         print('manual overrride of stims')
         stimsInOrder = config.opt_stims.split(',')

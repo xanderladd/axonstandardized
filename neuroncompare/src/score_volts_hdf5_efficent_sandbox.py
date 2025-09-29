@@ -43,6 +43,7 @@ max_score = 1000
 stim_file = h5py.File(config.stims_file_path,'r')
 volts_name_list = sorted(os.listdir(config.volts_path))
 volts_name_list = [volt_name for volt_name in volts_name_list if "hdf5" in volt_name]
+
 params = h5py.File(config.params_file_path, 'r')
 
 num_volts_to_run = 1
@@ -54,10 +55,14 @@ elif config.config['num_nodes'] > 1 and config.config['num_volts'] == 0:
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
 else:
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
-    
+
+
 for volts in volts_name_list:
     if os.path.isfile(os.path.join(config.output_path,volts.replace('volts','scores'))):
         volts_name_list.remove(volts)
+
+#debug
+volts_name_list = ['53_volts.hdf5']
 
 print(volts_name_list, "volts to run"
      )
@@ -374,11 +379,13 @@ for k in range(len(volts_name_list)):
             
             # if not finite (nan or inf) replace with finite max
             nan_mask = (~np.isfinite(pin_scores)) | (np.isnan(pin_scores))  
-            if not  np.sum(nan_mask) > 0:
-                print(f"WARNING: {curr_function_name} failed to produce non na scores")
-                if curr_function_name in score_function_names:
-                    score_function_names.remove(curr_function_name)
-                continue         
+            # if not  np.sum(nan_mask) > 0:
+            #     print(f"WARNING: {curr_function_name} failed to produce non na scores")
+            #     import pdb; pdb.set_trace()
+
+            #     if curr_function_name in score_function_names:
+            #         score_function_names.remove(curr_function_name)
+            #     continue         
             pin_scores = np.where(nan_mask, np.nanmax(pin_scores[~nan_mask]), pin_scores)
             mm_scaler = MinMaxScaler()
             
@@ -391,7 +398,10 @@ for k in range(len(volts_name_list)):
             
             assert np.max(norm_pin_scores) < 1.01
             assert np.isfinite(norm_pin_scores).all()
-            
+
+
+
+            import pdb; pdb.set_trace()
             scores_hdf5.create_dataset('raw_pin_scores_'+curr_function_name, data=pin_scores)
             #scores_hdf5.create_dataset('raw_pdx_scores_'+curr_function_name, data=pdx_scores)
             scores_hdf5.create_dataset('norm_pin_scores_'+curr_function_name, data=norm_pin_scores)

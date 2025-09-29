@@ -242,7 +242,7 @@ class Pipeline:
             
             # Copy models into neuron_genetic_alg directory
             source_cell_dir = os.path.join(self.path_manager.base_dir, "cell_models")
-            dest_cell_dir = os.path.join(ga_dir,"genetic_alg","cell_models")
+            dest_cell_dir = os.path.join(ga_dir,"neuron_genetic_alg","neuron_files")
             os.makedirs(dest_cell_dir, exist_ok=True)
             self.copy_directory(source_cell_dir, dest_cell_dir)
             

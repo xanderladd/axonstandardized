@@ -130,6 +130,7 @@ files = os.listdir(folders[-1])
 files = [os.path.join(folders[-1], f) for f in files if 'best_indv' in f]
                      
 GA_result_path = files[-1]
+print("GA RESULT PATH:", GA_result_path)
 # base_params_path = './params/params_bbp_full_gpu_tuned_10_based.csv'
 df = pd.read_csv(cfg.params_csv, skipinitialspace=True, usecols=['Base value'])
 

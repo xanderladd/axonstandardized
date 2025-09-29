@@ -37,6 +37,7 @@ if __name__ == "__main__":
     params_name_list = list(params_hdf5.keys())
     stims_name_list = sorted(list(stims_hdf5.keys()))
     stims_name_list = [elem for elem in stims_name_list if "dt" not in elem]
+    stims_name_list = ["10","15","35","42","51","53","89","69","68"]
 
 
     if i == 0 and config['num_nodes'] == 1:
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     elif config.config['num_nodes'] > 1 and config.config['num_volts'] == 0:
         num_stims_to_run = math.ceil(len(stims_name_list) / config.config['num_nodes'] )
         curr_stim_name_list = stims_name_list[(i-1)*num_stims_to_run:(i)*num_stims_to_run]
-        print(len(curr_stim_name_list))
+        print(len(curr_stim_name_list), curr_stim_name_list)
     else:
         curr_stim_name_list = stims_name_list[(i-1)*num_stims_to_run:(i)*num_stims_to_run]
 
