@@ -15,6 +15,7 @@ import re
 # Import existing configuration utilities
 from neuroncompare.src.config_manager import get_config
 config = get_config()
+
 print(f"Working directory: {os.getcwd()}")
 
 def split(container, count):
@@ -48,6 +49,7 @@ params = h5py.File(config.params_file_path, 'r')
 
 num_volts_to_run = 1
 i=int(sys.argv[1])
+
 if i == 0 and config.config['num_nodes'] == 1:
     volts_name_list = volts_name_list
 elif config.config['num_nodes'] > 1 and config.config['num_volts'] == 0:
@@ -56,13 +58,9 @@ elif config.config['num_nodes'] > 1 and config.config['num_volts'] == 0:
 else:
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
 
-
 for volts in volts_name_list:
     if os.path.isfile(os.path.join(config.output_path,volts.replace('volts','scores'))):
         volts_name_list.remove(volts)
-
-#debug
-volts_name_list = ['53_volts.hdf5']
 
 print(volts_name_list, "volts to run"
      )
@@ -386,7 +384,12 @@ for k in range(len(volts_name_list)):
             #     if curr_function_name in score_function_names:
             #         score_function_names.remove(curr_function_name)
             #     continue         
-            pin_scores = np.where(nan_mask, np.nanmax(pin_scores[~nan_mask]), pin_scores)
+            try:
+                pin_scores = np.where(nan_mask, np.nanmax(pin_scores[~nan_mask]), pin_scores)
+            except ValueError:
+                print(f"WARNING: {curr_function_name} failed to produce non na scores")
+                pin_scores = np.zeros_like(pin_scores)
+
             mm_scaler = MinMaxScaler()
             
             #norm
@@ -400,8 +403,6 @@ for k in range(len(volts_name_list)):
             assert np.isfinite(norm_pin_scores).all()
 
 
-
-            import pdb; pdb.set_trace()
             scores_hdf5.create_dataset('raw_pin_scores_'+curr_function_name, data=pin_scores)
             #scores_hdf5.create_dataset('raw_pdx_scores_'+curr_function_name, data=pdx_scores)
             scores_hdf5.create_dataset('norm_pin_scores_'+curr_function_name, data=norm_pin_scores)

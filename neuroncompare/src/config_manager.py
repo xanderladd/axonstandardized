@@ -33,7 +33,8 @@ class ConfigManager:
         'passive', 'ingestCell', 'makeStims', 'makeParams', 'usePrevParams',
         'usePassiveParams', 'makeVolts', 'wait4volts', 'makeVoltsGPU',
         'makeScores', 'wait4scores', 'makeOpt', 'allenOpt', 'makeObj',
-        'runGA', 'log_transform_params', 'gaGPU', 'sbatch', 'srun', 'shell'
+        'runGA', 'log_transform_params', 'gaGPU', 'sbatch', 'srun', 'shell',
+        "compare_models"
     ]
     
     # Valid model options
@@ -61,6 +62,7 @@ class ConfigManager:
         self.config: Dict[str, Any] = {}
         self.load_config()
         self.validate_config()
+        self.cwd = os.getcwd()
         dt = None
     
     def load_config(self):
@@ -221,7 +223,7 @@ class ConfigManager:
         # we are either in run folder or in root dir
         if 'runs' in self.input_dir:
             self.run_dir = f"./"
-            self.params_file_path = '/params/params_' + self.config['model'] + '_' + self.config['peeling']+ '.hdf5'
+            self.params_file_path = 'params/params_' + self.config['model'] + '_' + self.config['peeling']+ '.hdf5'
             self.stims_file_path = os.path.join("stims", self.config['stim_file'] + '.hdf5')
         else:
             self.run_dir = os.path.join(self.input_dir , f"runs/{self.config['model']}_{self.config['peeling']}_{self.config['runDate']}_{self.config.get('custom', '')}")
@@ -263,9 +265,14 @@ class ConfigManager:
             print("failed to find params, they probably haven't been made yet")
         # Additional stims
         if 'added_stims' in self.config:
-            self.added_stims = [elem.encode('ASCII') for elem in self.config['added_stims'].split(',')]
+            self.added_stims = [elem for elem in self.config['added_stims'].split(',')]
         else:
             self.added_stims = []
+
+        if 'opt_stims' in self.config:
+            self.opt_stims = [elem for elem in self.config['opt_stims'].split(',')]
+        else:
+            self.opt_stims = []
         
         # Starting population configuration
         if 'data_dir' in self.config:

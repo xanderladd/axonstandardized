@@ -30,25 +30,16 @@ then
     SLURM_ARRAY_TASK_ID=0
 fi
 
-srcDir=runs/${model}_${peeling}_${runDate}_${custom}
-coreN=${srcDir}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
-arrIdx=${SLURM_ARRAY_TASK_ID}
-wrkDir=${coreN}-${arrIdx}
+wrkDir=${NEURON_COMPARE_ROOT}/runs/${model}_${peeling}_${runDate}_${custom}
 echo 'my wrkDir='${wrkDir}
-mkdir -p ${wrkDir}
 
-cp -rp ${base_dir}/cell_models ${wrkDir}/cell_models
-cd ${wrkDir}/"cell_models"
-cd ${model}
-rm -rf x86_64
-nrnivmodl 
-nrnivmodl mechanisms
+cp -rp ${NEURON_COMPARE_ROOT}/cell_models ${wrkDir}/cell_models
 
-cd ../../
+
+cd $wrkDir
+arrIdx=$SLURM_ARRAY_TASK_ID
 
 export OMP_NUM_THREADS=1
-
-
 
 echo 'about to run run_stim_hdf5.py'
 echo 'current dir: ' `pwd`

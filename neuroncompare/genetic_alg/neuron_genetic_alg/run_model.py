@@ -20,7 +20,7 @@ except ImportError:
     print('could not import AllenSDK')
     
 if 'bbp' in config.model:
-    def run_model(param_set, stim_name_list, input_dt=None):
+    def run_model(param_set, stim_name_list, input_dt=None, start_Vm=None):
         h.load_file(config.run_file)
         volts_list = []
         stims = h5py.File(config.stims_path, 'r')

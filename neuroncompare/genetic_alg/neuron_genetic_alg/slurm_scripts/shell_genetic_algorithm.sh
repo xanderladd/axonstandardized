@@ -20,7 +20,7 @@ export BLUEPYOPT_SEED=${seed}
 echo seed: ${seed}
 export OMP_NUM_THREADS=1
 
-python -m neuroncompare.src.optimize_parameters_genetic_alg \
+python optimize_parameters_genetic_alg.py \
     -vv                                \
     --compile                          \
     --offspring_size=1              \

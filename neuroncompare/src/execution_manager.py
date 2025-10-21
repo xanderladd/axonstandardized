@@ -25,6 +25,14 @@ class ExecutionManager:
         'volts_scores': True,
         "compare_models": True
     }
+    SBATCH_SCRIPTS = {
+        'volts': True,
+        'scores': True,
+        'opt': True,
+        'genetic_algorithm': True,
+        "compare_models": True
+    }
+    
     
     # Scripts that are always Python modules
     PYTHON_MODULES = {
@@ -190,7 +198,8 @@ class ExecutionManager:
         elif stage_name in self.SHELL_SCRIPTS:
             script_path = self.path_manager.get_script_path(stage_name)
             
-            if self.sbatch:
+            if self.sbatch and stage_name in self.SBATCH_SCRIPTS:
+                import pdb; pdb.set_trace()
                 command = f"sbatch {script_path} {args_str}"
             else:
                 command = f"sh {script_path} {args_str}"

@@ -326,9 +326,11 @@ if __name__ == "__main__":
         
     stimsInOrder = [e.decode('ascii') for e in opt_file['stims_optimal_order'][:]]
 
-    if False: #len(config.opt_stims):
+    if len(config.opt_stims): # config provided stims we should use for objective 
         print('manual overrride of stims')
-        stimsInOrder = config.opt_stims.split(',')
+        stimsInOrder = config.opt_stims
+        if type(stimsInOrder) == str: # config didn't parse stims into list
+            stimsInOrder = stimsInOrder.split(',')
         k = len(stimsInOrder)
     weight_list, stim_list = trainAndValidateScoreOptimization(stimsInOrder[:k], True, seed=seed, saveToFile=True)
     opt_result_hdf5 = h5py.File(save_path +'/multi_stim_without_sensitivity_' + model \

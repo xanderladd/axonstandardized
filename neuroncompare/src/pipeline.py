@@ -16,11 +16,38 @@ class Pipeline:
     Orchestrates the execution of the entire pipeline.
     """
     
-    def __init__(self):
-        """Initialize the Pipeline."""
-        self.root_dir = os.getcwd()
-        os.environ['NEURON_COMPARE_ROOT'] = self.root_dir
-        assert os.path.isfile(os.path.join( self.root_dir, 'input.txt')), "must launch from a path with input.txt in the root dir"
+    def __init__(self, resume_mode=False):
+        """Initialize the Pipeline.
+        
+        Args:
+            resume_mode: If True, we're resuming from a run directory
+        """
+        self.resume_mode = resume_mode
+        
+        if resume_mode:
+            # We're already in the run directory (CLI changed directory)
+            self.root_dir = os.getcwd()
+            # Find the actual neuroncompare root for Python imports
+            test_dir = self.root_dir
+            while test_dir != '/':
+                if os.path.exists(os.path.join(test_dir, 'src', 'pipeline.py')):
+                    self.nc_root = test_dir
+                    os.environ['NEURON_COMPARE_ROOT'] = test_dir
+                    break
+                test_dir = os.path.dirname(test_dir)
+            else:
+                # Fallback: assume we're in neuroncompare/runs/RUN_NAME/
+                self.nc_root = os.path.dirname(os.path.dirname(self.root_dir))
+                os.environ['NEURON_COMPARE_ROOT'] = self.nc_root
+        else:
+            # Normal mode
+            self.root_dir = os.getcwd()
+            self.nc_root = self.root_dir
+            os.environ['NEURON_COMPARE_ROOT'] = self.root_dir
+            assert os.path.isfile(os.path.join(self.root_dir, 'input.txt')), \
+                   "must launch from a path with input.txt in the root dir"
+        
+        # Initialize components (these stay the same)
         self.config = get_config()
         self.path_manager = get_path_manager()
         self.logger = get_logger()
@@ -45,14 +72,60 @@ class Pipeline:
             input_file_path = self.config.input_file_path
             run_input_path = self.path_manager.get_run_file("input.txt")
             shutil.copy2(input_file_path, run_input_path)
+
+
+            stim_dest = os.path.join(os.path.dirname(run_input_path), 'stims')
+            stim_src = os.path.join(self.config['data_dir'],'stims')
+            assert os.path.isdir(stim_src)
+            shutil.copytree(stim_src,stim_dest, dirs_exist_ok=True) 
+
+            param_dest = os.path.join(os.path.dirname(run_input_path), 'params')
+            param_src = os.path.join(self.config['data_dir'],'params')
+            assert os.path.isdir(param_src)
+            shutil.copytree(param_src,param_dest, dirs_exist_ok=True) 
+            
+            # ADD THESE LINES:
+            # Copy scripts to run directory
+            self._copy_scripts_to_run_dir()
+            
+            # Create run_remainder.sh
+            self._create_run_remainder_script()
             
             self.logger.info(f"Created run directory at {self.path_manager.get_run_dir()}")
             return True
             
         except Exception as e:
             self.logger.error(f"Failed to set up directories: {str(e)}")
-            return False
+            return False   
+
+    def _create_run_remainder_script(self):
+        """Create a run_remainder.sh script in the run directory."""
+        run_dir = self.path_manager.get_run_dir()
+        nc_root = self.nc_root
+        
+        script_content = f'''#!/usr/bin/env bash
+    # Auto-generated script to resume pipeline from this run directory
+    # Generated at: {time.strftime("%Y-%m-%d %H:%M:%S")}
     
+    # Get the directory this script is in (the run directory)
+    RUN_DIR="$( cd "$( dirname "${{BASH_SOURCE[0]}}" )" && pwd )"
+    
+    # Get the neuroncompare root
+    NC_ROOT="{nc_root}"
+    
+    # Run the pipeline in resume mode from the neuroncompare root
+    cd "$NC_ROOT"
+    python -m neuroncompare.src.cli --resume --run-dir "$RUN_DIR" "$@"
+    '''
+        
+        script_path = os.path.join(run_dir, 'run_remainder.sh')
+        with open(script_path, 'w') as f:
+            f.write(script_content)
+        
+        # Make it executable
+        os.chmod(script_path, 0o755)
+        self.logger.info(f"Created run_remainder.sh in {run_dir}")
+        
     def ingest_cell(self) -> bool:
         """
         Run cell ingestion.
@@ -162,7 +235,6 @@ class Pipeline:
             return True
             
         self.logger.info("Starting voltage generation")
-        
         param_dir = os.path.join(self.config['data_dir'], "params")
         target_param_dir = os.path.join(self.path_manager.get_run_dir(), "params")
         os.makedirs(target_param_dir, exist_ok=True)
@@ -235,17 +307,21 @@ class Pipeline:
             run_dir = self.path_manager.get_run_dir()
             ga_dir = os.path.join(run_dir, "genetic_alg")
             os.makedirs(ga_dir, exist_ok=True)
-            
             # Copy ga_dir directory
-            source_neuron_ga_dir = os.path.join(self.path_manager.base_dir, "genetic_alg")
+            source_neuron_ga_dir = os.path.join(self.nc_root, "genetic_alg")
             self.copy_directory(source_neuron_ga_dir, ga_dir)
             
             # Copy models into neuron_genetic_alg directory
-            source_cell_dir = os.path.join(self.path_manager.base_dir, "cell_models")
+            source_cell_dir = os.path.join(self.nc_root, "cell_models")
             dest_cell_dir = os.path.join(ga_dir,"neuron_genetic_alg","neuron_files")
             os.makedirs(dest_cell_dir, exist_ok=True)
             self.copy_directory(source_cell_dir, dest_cell_dir)
-            
+            # unfortunate we need to do this but difference between python launcher and slurm launcher
+            dest_cell_dir = os.path.join(ga_dir,"neuron_genetic_alg","cell_models")
+            os.makedirs(dest_cell_dir, exist_ok=True)
+            self.copy_directory(source_cell_dir, dest_cell_dir)
+
+            shutil.copyfile(os.path.join(run_dir, 'input.txt'), os.path.join(ga_dir,"neuron_genetic_alg", 'input.txt'))
 
             # Create directories for results
             os.makedirs(os.path.join(ga_dir, "optimization_results"), exist_ok=True)
@@ -398,12 +474,20 @@ class Pipeline:
             True if successful, False otherwise
         """
         start_time = time.time()
-        self.logger.info("Starting neuroncompare pipeline")
+        assert os.environ['NEURON_COMPARE_ROOT'], "nrn compare root not set"
+        # ADD THIS:
+        mode_str = " (RESUME MODE)" if self.resume_mode else ""
+        self.logger.info(f"Starting neuroncompare pipeline{mode_str}")
+        # MODIFY THIS SECTION:
+        if not self.resume_mode:
+            # Normal mode - set up directories
+            if not self.setup_directories():
+                self.logger.error("Failed to set up directories")
+                return False
+        else:
+            # Resume mode - skip setup, we're already in the run directory
+            self.logger.info(f"Resume mode: working from {os.getcwd()}")
         
-        # Set up directories
-        if not self.setup_directories():
-            self.logger.error("Failed to set up directories")
-            return False
         
         # Run the pipeline stages
         pipeline_stages = [
@@ -440,6 +524,35 @@ class Pipeline:
         duration = end_time - start_time
         self.logger.info(f"Pipeline completed successfully in {duration:.2f} seconds")
         return True
+
+    def _copy_scripts_to_run_dir(self):
+        """Copy necessary shell scripts to the run directory."""
+        run_dir = self.path_manager.get_run_dir()
+        
+        # Create scripts directory structure in run directory
+        run_scripts_dir = os.path.join(run_dir, 'scripts', 'shell_scripts')
+        os.makedirs(run_scripts_dir, exist_ok=True)
+        # Copy shell scripts
+        src_scripts_dir = os.path.join(self.nc_root, 'scripts', 'shell_scripts')
+        for script in os.listdir(src_scripts_dir):
+            if script.endswith('.sh'):
+                src = os.path.join(src_scripts_dir, script)
+                dst = os.path.join(run_scripts_dir, script)
+                shutil.copy2(src, dst)
+                
+        # copy over slurm scripts
+        run_scripts_dir = os.path.join(run_dir, 'scripts', 'slurm')
+        os.makedirs(run_scripts_dir, exist_ok=True)
+        # Copy shell scripts
+        src_scripts_dir = os.path.join(self.nc_root, 'scripts', 'slurm')
+        for script in os.listdir(src_scripts_dir):
+            if script.endswith('.slr'):
+                src = os.path.join(src_scripts_dir, script)
+                dst = os.path.join(run_scripts_dir, script)
+                shutil.copy2(src, dst)
+                
+        
+        self.logger.info(f"Copied shell scripts to {run_scripts_dir}")
 
 def main():
     """

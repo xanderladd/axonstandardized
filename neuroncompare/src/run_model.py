@@ -28,11 +28,17 @@ except ImportError:
     print('could not import AllenSDK')
     
 if 'bbp' in config.model:
-    def run_model(param_set, stim_name_list, input_dt=None, start_Vm=None):
+    def run_model(param_set, stim_name_list, dt=None, start_Vm=None):
+        # unfortunate we need to do this so input_dt isn't overwritten
+        # too late to change whole interface to use input dt here
+        input_dt = dt
+        if type(stim_name_list) == str: 
+            stim_name_list = [stim_name_list]
         h.load_file(config.run_file)
         volts_list = []
         stims = h5py.File(config.stims_file_path, 'r')
         for curr_stim_name in stim_name_list:
+
             total_params_num = len(param_set)
             curr_stim = stims[curr_stim_name][:]
             dt = retrieve_dt(curr_stim_name, stims, dt=input_dt)

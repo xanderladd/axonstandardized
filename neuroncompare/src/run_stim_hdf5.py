@@ -37,8 +37,8 @@ if __name__ == "__main__":
     params_name_list = list(params_hdf5.keys())
     stims_name_list = sorted(list(stims_hdf5.keys()))
     stims_name_list = [elem for elem in stims_name_list if "dt" not in elem]
-    stims_name_list = ["10","15","35","42","51","53","89","69","68"]
-
+    if len(config.opt_stims):
+        stims_name_list = config.opt_stims
 
     if i == 0 and config['num_nodes'] == 1:
         curr_stim_name_list = stims_name_list
@@ -75,8 +75,9 @@ if __name__ == "__main__":
     pin_set_size = None
     pdx_set_size = None
 
+    p_dir = os.path.dirname(config.params_file_path)
     orig_name = "orig_" + config.config['peeling']
-    orig_params = h5py.File('../../params/params_' + config.config['model'] + '_' + config.config['peeling']+ '.hdf5', 'r')[orig_name][0]
+    orig_params = h5py.File(f'{p_dir}/params_' + config.config['model'] + '_' + config.config['peeling']+ '.hdf5', 'r')[orig_name][0]
 
     # SET UP DONE
 
@@ -123,8 +124,8 @@ if __name__ == "__main__":
             if len(config.negative_param_inds):
                 for neg_idx in config.negative_param_inds:
                     params_data[neg_idx] =  - np.abs(params_data[neg_idx])
-            # don't set dt here, set it in run model
-            volts_at_i = run_model(params_data, curr_stim_name, dt=None)
+            # dt should be 0.02 for bbp, unset for allen inst data (don't set in input.txt)
+            volts_at_i = run_model(params_data, curr_stim_name, dt=config.dt)
             result_key = (params_name, param_ind, stim_ind)
             results[result_key] = volts_at_i
     

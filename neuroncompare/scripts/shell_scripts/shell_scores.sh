@@ -18,19 +18,11 @@ source ./input.txt
 SLURM_ARRAY_TASK_ID=0
 SLURM_ARRAY_JOB_ID=0
 
+wrkDir=${NEURON_COMPARE_ROOT}/runs/${model}_${peeling}_${runDate}_${custom}
 
-
-srcDir=runs/${model}_${peeling}_${runDate}_${custom}
-coreN=${srcDir}/'scores_sand'/${SLURM_ARRAY_JOB_ID}
-arrIdx=${SLURM_ARRAY_TASK_ID}
-wrkDir=${coreN}-${arrIdx}
-echo 'my wrkDir='${wrkDir}
-mkdir -p ${wrkDir}
-
-cd ${wrkDir}/${dirToRun}
 export OMP_NUM_THREADS=1
 
-
+arrIdx=0
 # srun -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
 
 python -m neuroncompare.src.score_volts_hdf5_efficent_sandbox $arrIdx # > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out

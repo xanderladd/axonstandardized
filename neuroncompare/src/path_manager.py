@@ -44,7 +44,10 @@ class PathManager:
         Returns:
             Absolute path to the run directory
         """
-        run_dir = self.config.get_run_directory()
+        if not 'runs' in self.base_dir:
+            run_dir = self.config.get_run_directory()
+        else:
+            run_dir = self.base_dir # could be more clever to allow us to call this from deeper in runs folder but idc for now
         return self._ensure_absolute_path(run_dir)
     
     def get_subdirectory(self, subdir: str, within_run_dir: bool = True) -> str:

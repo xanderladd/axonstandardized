@@ -7,6 +7,7 @@ from mpi4py import MPI
 import hoc_utils
 import run_model
 import config
+import copy
 os.chdir(config.neuron_path) 
 from neuron import h
 os.chdir("../../")
@@ -28,7 +29,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         names, self.orig_params, mins, maxs = hoc_utils.get_param_bounds(config.params_csv, config.params_opt_ind)
         
         if config.log_transform_params:
-            self.bases, self.orig_params[config.params_opt_ind], mins, maxs = hoc_utils.log_params(maxs, mins, self.orig_params)
+            self.bases, self.orig_params[config.params_opt_ind], mins, maxs = hoc_utils.log_params(maxs, mins, self.orig_params[config.params_opt_ind])
         self.params = [ bpop.parameters.Parameter(name, bounds=(minval, maxval)) for name, minval, maxval in zip(names, mins, maxs) ]
         print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in zip(names, mins, maxs)])
         print("Orig params:", self.orig_params)
@@ -40,9 +41,14 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
         if config.target_volts:
             return config.target_volts
+
+        orig_p_copy = copy.deepcopy(self.orig_params)
+        for i, opt_ind in enumerate(config.params_opt_ind):
+                if self.bases[i] > config.base_thresh and self.orig_params[i]:
+                    orig_p_copy[opt_ind] = math.pow(self.bases[i], orig_p_copy[opt_ind])
         
         if not os.path.isfile('target_volts.npy'):
-            target_volts = run_model.run_model(self.orig_params, config.opt_stim_names)
+            target_volts = run_model.run_model(orig_p_copy, config.opt_stim_names, input_dt=config.dt)
             np.save('target_volts.npy', target_volts)
         else:
             target_volts = np.load('target_volts.npy')
@@ -61,7 +67,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
     
 
     def assign_params(self, curr_params):
-        modified_params = self.orig_params
+        modified_params = copy.deepcopy(self.orig_params)
         for i, curr_opt_ind in enumerate(config.params_opt_ind):
             modified_params[curr_opt_ind] = curr_params[i]
         # undo log x-form

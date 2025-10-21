@@ -5,7 +5,7 @@
 #SBATCH --constraint=cpu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m2043
-#SBATCH --array 1-150%40
+#SBATCH --array 1-6%40
 
 # change array 1-n, where n is the number of stims
 
@@ -21,18 +21,9 @@ then
     SLURM_ARRAY_TASK_ID=0
 fi
 
-srcDir=runs/${model}_${peeling}_${runDate}_${custom}
-coreN=${srcDir}/'scores_sand'/${SLURM_ARRAY_JOB_ID}
-arrIdx=${SLURM_ARRAY_TASK_ID}
-wrkDir=${coreN}-${arrIdx}
-echo 'my wrkDir='${wrkDir}
-mkdir -p ${wrkDir}
+wrkDir=${NEURON_COMPARE_ROOT}/runs/${model}_${peeling}_${runDate}_${custom}
+cp input.txt ${wrkDir}
 
-
-dirToRun='score_volts_sandbox'
-cp -rp ${dirToRun} ${wrkDir}/
-cp input.txt ${wrkDir}/${dirToRun}/
-cd ${wrkDir}/${dirToRun}
 export OMP_NUM_THREADS=1
 
 echo $arrIdx ${model} ${peeling}
@@ -42,4 +33,4 @@ if [[ ${model} = 'allen' ]]; then
 else 
     srun -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx
 fi
-echo DONE!E!E!!!!!!!!
+echo DONE!E!E!!!!!!!!!!!!!!!
