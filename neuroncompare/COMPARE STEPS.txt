@@ -1,0 +1,11 @@
+1. finish interactive run (scores -> GA -> compare, but run eveyrthing and try to figure out throttling for srun)
+2. sbatch version
+3. docstrings
+4. Notebok example
+
+MUST FIX:
+    hotfixes for missing scores
+
+left over
+    - config sometimes accessed as dict and sometimes as object
+    - hotfixes on GA 

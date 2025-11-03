@@ -1,0 +1,86 @@
+#!/bin/bash
+#SBATCH --qos=regular
+#SBATCH --time=00:12:00
+#SBATCH --nodes=1
+#SBATCH --constraint=cpu
+#SBATCH --mail-type=ALL
+#SBATCH --account=m2043
+#SBATCH --array 1-6
+
+
+# change array 1-n, where n is the number of stims
+CURRENTDATE=`date +%m_%d_%Y`
+input="input.txt"
+while IFS= read -r line
+do
+    IFS='=' read -ra inputs <<< "$line"
+    name="${inputs[0]}"
+    data="${inputs[1]}"
+done < "$input"
+source ./input.txt
+
+
+echo "start-A "`hostname`" task="${job_sh}
+echo  'cscratch='${CSCRATCH}
+echo  'scratch='${SCRATCH}
+echo SLURM_ARRAY_TASK_ID=${SLURM_ARRAY_TASK_ID}
+echo SLURM_ARRAY_JOB_ID=${SLURM_ARRAY_JOB_ID}
+if [[ -z "$SLURM_ARRAY_TASK_ID" ]]
+then
+    echo Not running Slurm Array
+    SLURM_ARRAY_TASK_ID=0
+fi
+srcDir=`pwd`
+
+wrkDir=${NEURON_COMPARE_ROOT}/runs/${model}_${peeling}_${runDate}_${custom}
+echo 'my wrkDir='${wrkDir}
+
+cp -rp ${NEURON_COMPARE_ROOT}/cell_models ${wrkDir}/cell_models
+cd ${wrkDir}/"cell_models"
+cd ${model}
+rm -rf x86_64
+nrnivmodl 
+nrnivmodl mechanisms
+
+cd $wrkDir
+
+
+export OMP_NUM_THREADS=1
+
+
+srun -n 64  python -m neuroncompare.src.run_stim_hdf5 $arrIdx ${peeling}
+
+echo COMPLETE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

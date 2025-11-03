@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH --qos=regular
+#SBATCH --time=00:20:00
+#SBATCH --nodes=1
+#SBATCH --constraint=cpu
+#SBATCH --mail-type=ALL
+#SBATCH --account=m2043
+#SBATCH --array 1-6%40
+
+# change array 1-n, where n is the number of stims
+
+# read and assn input text ver simply
+source ./input.txt
+
+
+echo SLURM_ARRAY_TASK_ID=${SLURM_ARRAY_TASK_ID}
+echo SLURM_ARRAY_JOB_ID=${SLURM_ARRAY_JOB_ID}
+if [[ -z "$SLURM_ARRAY_TASK_ID" ]]
+then
+    echo Not running Slurm Array
+    SLURM_ARRAY_TASK_ID=0
+fi
+
+wrkDir=${NEURON_COMPARE_ROOT}/runs/${model}_${peeling}_${runDate}_${custom}
+cp input.txt ${wrkDir}
+
+export OMP_NUM_THREADS=1
+
+echo $arrIdx ${model} ${peeling}
+
+if [[ ${model} = 'allen' ]]; then
+    srun  -n 64 python score_volts_hdf5_efficent_sandbox_allen.py $arrIdx ${model} ${peeling}
+else 
+    srun -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx
+fi
+echo DONE!E!E!!!!!!!!!!!!!!!
